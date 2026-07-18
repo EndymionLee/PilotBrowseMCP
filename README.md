@@ -50,13 +50,13 @@ Build various workflows, simple demo showcase.
 
 Search a keyword, find a video, like and comment.
 
-<video src="./assets/video/YoutubeVideo.mp4" controls width="100%" style="max-width:720px;"></video>
+<video src="https://github.com/user-attachments/assets/129c69f7-21a7-4fbe-93ae-6b0205450933" controls width="100%" style="max-width:720px;"></video>
 
 #### Qidian Novel Saver
 
 Search a novel, save the first 5 chapters.
 
-<video src="./assets/video/QiDian.mp4" controls width="100%" style="max-width:720px;"></video>
+<video src="https://github.com/user-attachments/assets/b244db3b-fb98-433c-b6ed-d8a74c75e802" controls width="100%" style="max-width:720px;"></video>
 
 ---
 
