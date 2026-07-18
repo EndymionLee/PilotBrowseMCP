@@ -1,0 +1,113 @@
+{
+  "视频播放页": {
+    "urlPattern": "/watch?v=",
+    "selectors": {
+      "videoTitle": {
+        "selector": "ytd-video-primary-info-renderer h1",
+        "description": "视频标题",
+        "type": "text"
+      },
+      "channelName": {
+        "selector": "#owner a",
+        "description": "频道名称",
+        "type": "text"
+      },
+      "subscribeButton": {
+        "selector": "#subscribe-button",
+        "description": "订阅/已订阅按钮",
+        "type": "click"
+      },
+      "likeButton": {
+        "selector": "ytd-video-primary-info-renderer button[aria-label*='与另外']",
+        "altSelector": "ytd-video-primary-info-renderer button[aria-label*='顶此视频']",
+        "description": "点赞按钮",
+        "type": "click"
+      },
+      "dislikeButton": {
+        "selector": "ytd-video-primary-info-renderer button[aria-label='不喜欢此视频']",
+        "description": "点踩按钮",
+        "type": "click"
+      },
+      "shareButton": {
+        "selector": "ytd-video-primary-info-renderer button[aria-label='分享']",
+        "description": "分享按钮（点开弹出分享面板）",
+        "type": "click",
+        "opensDialog": true
+      },
+      "saveButton": {
+        "selector": "ytd-video-primary-info-renderer button[aria-label='保存到播放列表']",
+        "description": "保存到播放列表",
+        "type": "click",
+        "opensDialog": true
+      },
+      "downloadButton": {
+        "selector": "ytd-video-primary-info-renderer button[aria-label='下载']",
+        "description": "下载按钮",
+        "type": "click"
+      },
+      "moreActionsButton": {
+        "selector": "ytd-video-primary-info-renderer button[aria-label='其他操作']",
+        "description": "更多操作（举报、字幕等）",
+        "type": "click"
+      },
+      "commentPlaceholder": {
+        "selector": "#placeholder-area",
+        "description": "评论输入框占位符",
+        "type": "click",
+        "notes": "点击后激活 contenteditable-root"
+      },
+      "commentInput": {
+        "selector": "#contenteditable-root",
+        "description": "评论输入框（激活后）",
+        "type": "type",
+        "notes": "contenteditable div"
+      },
+      "commentSubmit": {
+        "selector": "#submit-button",
+        "description": "评论提交按钮",
+        "type": "click",
+        "notes": "输入文字后自动启用"
+      },
+      "likeCount": {
+        "selector": "ytd-video-primary-info-renderer button[aria-label*='与另外']",
+        "description": "点赞数（从按钮文字提取）",
+        "type": "text"
+      },
+      "viewCount": {
+        "selector": "ytd-video-primary-info-renderer .ytd-video-primary-info-renderer",
+        "description": "观看次数",
+        "type": "text",
+        "notes": "通常在视频标题下方"
+      }
+    },
+    "dialogs": {
+      "shareDialog": {
+        "title": "分享面板",
+        "openBy": "shareButton",
+        "selectors": {
+          "shareUrlInput": {
+            "selector": "#share-url",
+            "description": "分享链接（只读输入框）",
+            "type": "text"
+          },
+          "sharePlatforms": {
+            "selector": "ytd-third-party-share-target-section-renderer",
+            "description": "分享目标平台（嵌入、WhatsApp、Facebook、X、邮件）",
+            "type": "click"
+          }
+        }
+      },
+      "saveDialog": {
+        "title": "保存到播放列表",
+        "openBy": "saveButton",
+        "selectors": {
+          "newPlaylistButton": {
+            "selector": "button[aria-label='新建播放列表']",
+            "description": "新建播放列表按钮",
+            "type": "click"
+          }
+        }
+      }
+    }
+  }
+}

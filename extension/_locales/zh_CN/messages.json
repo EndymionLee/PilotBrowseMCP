@@ -1,0 +1,61 @@
+{
+  "appName": { "message": "Pilot Browse MCP" },
+  "appVersion": { "message": "v0.2" },
+
+  "connected": { "message": "已连接" },
+  "disconnected": { "message": "未连接" },
+  "shutdown": { "message": "已关闭" },
+  "statusPort": { "message": "ws://9456" },
+
+  "permCookies": { "message": "Cookie" },
+  "permCookiesDesc": { "message": "读取网站 Cookie" },
+  "permStorage": { "message": "LocalStorage" },
+  "permStorageDesc": { "message": "读取本地存储数据" },
+  "permScreenshot": { "message": "截图" },
+  "permScreenshotDesc": { "message": "对页面进行截图" },
+  "permHtml": { "message": "页面 HTML" },
+  "permHtmlDesc": { "message": "获取网页源代码" },
+  "sectionPermissions": { "message": "权限" },
+  "noPermissions": { "message": "无权限项" },
+  "permissionsFailed": { "message": "获取失败" },
+
+  "pickBtn": { "message": "拾取" },
+  "pickBtnWaiting": { "message": "点页面..." },
+  "pickInfo": { "message": "请点击页面上的元素" },
+  "pickDescPlaceholder": { "message": "这是干什么的？" },
+  "pickSendBtn": { "message": "发给 Agent" },
+  "pickSent": { "message": "已发送" },
+  "sectionPick": { "message": "标记元素" },
+  "pickEsc": { "message": "Esc 取消" },
+
+  "recBtn": { "message": "录制" },
+  "recBtnStop": { "message": "停止" },
+  "recIdle": { "message": "未录制" },
+  "recRecording": { "message": "录制中..." },
+  "recStopped": { "message": "已停止" },
+  "recStepCount": { "message": "$1 步" },
+  "recNoSteps": { "message": "未录到操作" },
+  "sectionRec": { "message": "录制工作流" },
+
+  "wfDescPlaceholder": { "message": "工作流描述" },
+  "wfSaveBtn": { "message": "发给 Agent" },
+  "wfSaving": { "message": "保存中..." },
+  "wfSaved": { "message": "已保存" },
+  "wfSavedOffline": { "message": "Server 离线，已暂存" },
+  "wfFailed": { "message": "保存失败" },
+  "wfNoDesc": { "message": "请填写描述" },
+
+  "sectionTabs": { "message": "标签页" },
+  "refreshBtn": { "message": "刷新" },
+  "noTabs": { "message": "无标签页" },
+  "loading": { "message": "加载中..." },
+  "loadFailed": { "message": "加载失败" },
+  "untitled": { "message": "(无标题)" },
+
+  "statusFailed": { "message": "失败" },
+  "unknownError": { "message": "未知错误" },
+  "resetRetry": { "message": "已重置，再点一次" },
+
+  "themeSwitch": { "message": "Toggle theme" },
+  "footer": { "message": "Agent Browser Runtime  ·  MCP" }
+}

@@ -1,0 +1,11 @@
+{
+  "coinVideo": {
+    "description": "给视频投币",
+    "startsOn": "视频播放页",
+    "steps": [
+      {"action": "click", "page": "视频播放页", "target": "coinButton"},
+      {"action": "wait", "params": {"ms": 800}},
+      {"action": "click", "page": "视频播放页", "target": "dialogs.coinDialog.coinSubmit"}
+    ]
+  }
+}

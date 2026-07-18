@@ -1,0 +1,34 @@
+{
+  "manual": {
+    "site": "YouTube",
+    "baseUrl": "https://www.youtube.com/",
+    "date": "2026-07-15",
+    "description": "YouTube 完整深度探索手册 - 包含首页、视频播放页、搜索结果页的交互元素和导航路径",
+    "explorationDepth": 2,
+    "pagesExplored": ["首页", "视频播放页", "搜索结果页"]
+  },
+  "siteMap": {
+    "首页": {
+      "url": "/",
+      "description": "YouTube 首页 - 视频推荐流",
+      "childrenPages": ["视频播放页", "搜索结果页", "Shorts页"],
+      "entryPoints": {
+        "videoCardTitle": "点击视频标题 → 进入视频播放页",
+        "searchSubmit": "搜索关键词 → 进入搜索结果页",
+        "shortsCard": "点击 Shorts → 进入 Shorts 页"
+      }
+    },
+    "视频播放页": {
+      "urlPattern": "/watch?v=",
+      "description": "视频播放页 - 播放器、点赞、评论、分享、保存、订阅",
+      "from": "首页",
+      "entryAction": "点击视频卡片标题"
+    },
+    "搜索结果页": {
+      "urlPattern": "/results?search_query=",
+      "description": "搜索结果页 - 筛选芯片、过滤按钮、视频结果列表",
+      "from": "首页",
+      "entryAction": "搜索关键词"
+    }
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "browser-mcp": {
+      "command": "node",
+      "args": [".\\BrowserPlugin\\server\\dist\\index.js"],
+      "lifecycle": "keep-alive",
+      "idleTimeout": 0
+    }
+  }
+}

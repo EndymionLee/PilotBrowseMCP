@@ -1,0 +1,61 @@
+{
+  "appName": { "message": "Pilot Browse MCP" },
+  "appVersion": { "message": "v0.2" },
+
+  "connected": { "message": "Connected" },
+  "disconnected": { "message": "Disconnected" },
+  "shutdown": { "message": "Stopped" },
+  "statusPort": { "message": "ws://9456" },
+
+  "permCookies": { "message": "Cookie" },
+  "permCookiesDesc": { "message": "Read website cookies" },
+  "permStorage": { "message": "LocalStorage" },
+  "permStorageDesc": { "message": "Read local storage data" },
+  "permScreenshot": { "message": "Screenshot" },
+  "permScreenshotDesc": { "message": "Capture page screenshot" },
+  "permHtml": { "message": "Page HTML" },
+  "permHtmlDesc": { "message": "Get page source code" },
+  "sectionPermissions": { "message": "Permissions" },
+  "noPermissions": { "message": "No items" },
+  "permissionsFailed": { "message": "Failed to load" },
+
+  "pickBtn": { "message": "Pick" },
+  "pickBtnWaiting": { "message": "Point..." },
+  "pickInfo": { "message": "Click an element on the page" },
+  "pickDescPlaceholder": { "message": "What is this element for?" },
+  "pickSendBtn": { "message": "Send to Agent" },
+  "pickSent": { "message": "Sent" },
+  "sectionPick": { "message": "Mark Element" },
+  "pickEsc": { "message": "Esc to cancel" },
+
+  "recBtn": { "message": "Record" },
+  "recBtnStop": { "message": "Stop" },
+  "recIdle": { "message": "Idle" },
+  "recRecording": { "message": "Recording..." },
+  "recStopped": { "message": "Stopped" },
+  "recStepCount": { "message": "$1 steps" },
+  "recNoSteps": { "message": "No steps recorded" },
+  "sectionRec": { "message": "Record Workflow" },
+
+  "wfDescPlaceholder": { "message": "Workflow description" },
+  "wfSaveBtn": { "message": "Send to Agent" },
+  "wfSaving": { "message": "Saving..." },
+  "wfSaved": { "message": "Saved" },
+  "wfSavedOffline": { "message": "Server offline, queued" },
+  "wfFailed": { "message": "Save failed" },
+  "wfNoDesc": { "message": "Please write a description" },
+
+  "sectionTabs": { "message": "Tabs" },
+  "refreshBtn": { "message": "Refresh" },
+  "noTabs": { "message": "No tabs" },
+  "loading": { "message": "Loading..." },
+  "loadFailed": { "message": "Load failed" },
+  "untitled": { "message": "(Untitled)" },
+
+  "statusFailed": { "message": "Failed" },
+  "unknownError": { "message": "Unknown error" },
+  "resetRetry": { "message": "State reset, try again" },
+
+  "themeSwitch": { "message": "Toggle theme" },
+  "footer": { "message": "Agent Browser Runtime  ·  MCP" }
+}

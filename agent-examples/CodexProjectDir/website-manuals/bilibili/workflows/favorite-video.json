@@ -1,0 +1,11 @@
+{
+  "favoriteVideo": {
+    "description": "收藏当前视频",
+    "startsOn": "视频播放页",
+    "steps": [
+      {"action": "click", "page": "视频播放页", "target": "favButton"},
+      {"action": "wait", "params": {"ms": 800}},
+      {"action": "click", "page": "视频播放页", "target": "dialogs.favDialog.favList"}
+    ]
+  }
+}

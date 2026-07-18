@@ -1,0 +1,23 @@
+{
+  "postComment": {
+    "description": "在视频评论区发表评论（已验证新版 brt 编辑器工作流）",
+    "startsOn": "视频播放页",
+    "steps": [
+      {"action": "scroll", "page": "视频播放页", "target": "commentApp", "description": "滚动到评论区触发加载"},
+      {"action": "wait", "params": {"ms": 1500}},
+      {"action": "click", "page": "视频播放页", "target": "commentEditor", "description": "点击 #input .brt-editor（contentEditable div）激活输入"},
+      {
+      "action": "input",
+      "page": "视频播放页",
+      "target": "commentEditor",
+      "strategy": "auto",
+      "fallback": ["cdp_insert_text", "execCommand_insertText", "input_event_dispatch"],
+      "params": {"text": "___评论内容___", "clear": true},
+      "description": "在 .brt-editor 中输入评论内容（contenteditable，自动降级到 CDP）"
+    },
+      {"action": "wait", "params": {"ms": 500}, "description": "等待发布按钮激活（class=active）"},
+      {"action": "click", "page": "视频播放页", "target": "commentSubmitBtn", "description": "点击 #pub > button 发布按钮提交评论"}
+    ],
+    "notes": "新版 brt 编辑器流程：① #input .brt-editor（contenteditable div）是实际可输入元素，直接 type（clear=true）即可 ② 提交成功后编辑器自动清空并恢复占位文字 ③ 发布按钮无文字时不可点击，输入文字后获得 class='active'。旧版（bili-comments Shadow DOM）需 JS 穿透: document.querySelector('bili-comments').shadowRoot.querySelector('textarea')。如 #input 不存在则使用旧版流程。另见 sendDanmaku 工作流（弹幕方式）。"
+  }
+}

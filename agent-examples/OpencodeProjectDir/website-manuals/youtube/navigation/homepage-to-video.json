@@ -1,0 +1,13 @@
+{
+  "首页→视频播放页": {
+    "from": "首页",
+    "to": "视频播放页",
+    "steps": [
+      {"action": "click", "page": "首页", "selector": "a.ytLockupMetadataViewModelTitle[href^='/watch']"}
+    ],
+    "backMethods": [
+      {"action": "click", "page": "视频播放页", "selector": "a[href='/']", "description": "点击 YouTube Logo"},
+      {"action": "browser_back", "description": "浏览器后退"}
+    ]
+  }
+}

@@ -1,0 +1,410 @@
+{
+  "视频播放页": {
+    "urlPattern": "/video/BV",
+    "selectors": {
+      "videoTitle": {
+        "selector": "h1.video-title",
+        "description": "视频标题",
+        "type": "text"
+      },
+      "videoInfo": {
+        "selector": "#viewbox_report",
+        "description": "视频信息容器（标题、播放量、弹幕数、日期）",
+        "type": "container"
+      },
+      "videoMeta": {
+        "selector": ".video-info-meta",
+        "description": "视频元数据（播放量、弹幕数、发布时间）",
+        "type": "text"
+      },
+      "upAvatar": {
+        "selector": "a.up-avatar",
+        "description": "UP主头像",
+        "type": "click",
+        "entersPage": true
+      },
+      "upName": {
+        "selector": "a.up-name",
+        "description": "UP主名称",
+        "type": "click",
+        "entersPage": true
+      },
+      "sendMsg": {
+        "selector": "a.send-msg",
+        "description": "给UP主发消息",
+        "type": "click",
+        "entersPage": true
+      },
+      "likeButton": {
+        "selector": ".video-like",
+        "description": "点赞按钮（快捷键Q）",
+        "type": "click"
+      },
+      "likeCount": {
+        "selector": ".video-like-info",
+        "description": "点赞数",
+        "type": "text"
+      },
+      "coinButton": {
+        "selector": ".video-coin",
+        "description": "投币按钮（快捷键W）",
+        "type": "click",
+        "notes": "点击后弹出投币弹窗"
+      },
+      "coinCount": {
+        "selector": ".video-coin-info",
+        "description": "投币数",
+        "type": "text"
+      },
+      "favButton": {
+        "selector": ".video-fav",
+        "description": "收藏按钮（快捷键E）",
+        "type": "click",
+        "opensDialog": true
+      },
+      "favCount": {
+        "selector": ".video-fav-info",
+        "description": "收藏数",
+        "type": "text"
+      },
+      "shareButton": {
+        "selector": ".video-share-wrap",
+        "description": "分享按钮",
+        "type": "click",
+        "opensDialog": true
+      },
+      "shareCount": {
+        "selector": ".video-share-info",
+        "description": "分享数",
+        "type": "text"
+      },
+      "complaintBtn": {
+        "selector": ".video-complaint",
+        "description": "稿件举报",
+        "type": "click",
+        "opensDialog": true
+      },
+      "noteBtn": {
+        "selector": ".video-note",
+        "description": "记笔记",
+        "type": "click",
+        "opensDialog": true
+      },
+      "moreToolBtn": {
+        "selector": ".video-tool-more",
+        "description": "更多工具菜单",
+        "type": "click",
+        "opensDialog": true
+      },
+      "watchLater": {
+        "selector": ".video-watchlater",
+        "description": "稍后再看",
+        "type": "click"
+      },
+      "usePhone": {
+        "selector": ".video-use-phone",
+        "description": "用手机看（二维码）",
+        "type": "click"
+      },
+      "danmakuInput": {
+        "selector": "input.bpx-player-dm-input",
+        "description": "弹幕输入框",
+        "type": "type",
+        "notes": "placeholder='发个友善的弹幕见证当下'"
+      },
+      "danmakuSwitch": {
+        "selector": "input.bui-danmaku-switch-input",
+        "description": "弹幕开关",
+        "type": "click"
+      },
+      "danmakuRule": {
+        "selector": ".bpx-player-video-info",
+        "description": "弹幕礼仪链接",
+        "type": "click",
+        "entersPage": true
+      },
+      "onlineCount": {
+        "selector": ".bpx-player-video-info-online",
+        "description": "在线观看人数",
+        "type": "text"
+      },
+      "tagLinks": {
+        "selector": "a.tag-link",
+        "description": "视频标签（点击搜索该标签）",
+        "type": "click",
+        "entersPage": true
+      },
+      "playButton": {
+        "selector": ".bpx-player-ctrl-play",
+        "description": "播放/暂停",
+        "type": "click"
+      },
+      "prevButton": {
+        "selector": ".bpx-player-ctrl-prev",
+        "description": "上一个视频",
+        "type": "click"
+      },
+      "nextButton": {
+        "selector": ".bpx-player-ctrl-next",
+        "description": "下一个视频",
+        "type": "click"
+      },
+      "qualityButton": {
+        "selector": ".bpx-player-ctrl-quality",
+        "description": "清晰度选择",
+        "type": "click",
+        "opensDialog": true,
+        "notes": "包含 1080P/720P/480P/360P/自动"
+      },
+      "speedButton": {
+        "selector": ".bpx-player-ctrl-playbackrate",
+        "description": "倍速选择",
+        "type": "click",
+        "opensDialog": true,
+        "notes": "包含 2.0x/1.5x/1.25x/1.0x/0.75x/0.5x"
+      },
+      "volumeButton": {
+        "selector": ".bpx-player-ctrl-volume",
+        "description": "音量控制",
+        "type": "click"
+      },
+      "settingButton": {
+        "selector": ".bpx-player-ctrl-setting",
+        "description": "播放器设置（镜像/循环/开播/字幕/画幅等）",
+        "type": "click",
+        "opensDialog": true
+      },
+      "pipButton": {
+        "selector": ".bpx-player-ctrl-pip",
+        "description": "画中画",
+        "type": "click"
+      },
+      "wideButton": {
+        "selector": ".bpx-player-ctrl-wide",
+        "description": "宽屏模式",
+        "type": "click"
+      },
+      "webFullscreen": {
+        "selector": ".bpx-player-ctrl-web",
+        "description": "网页全屏",
+        "type": "click"
+      },
+      "fullscreen": {
+        "selector": ".bpx-player-ctrl-full",
+        "description": "全屏",
+        "type": "click"
+      },
+      "recommendVideo": {
+        "selector": "a.video-awesome-img",
+        "description": "右侧推荐视频缩略图",
+        "type": "click",
+        "entersPage": "视频播放页"
+      },
+      "recommendTitle": {
+        "selector": "a[href^='/video/'].video-awesome-img + a",
+        "description": "右侧推荐视频标题",
+        "type": "text"
+      },
+      "shareCopyLink": {
+        "selector": "#share-btn-inner",
+        "description": "获取视频分享链接",
+        "type": "click"
+      },
+      "shareTimestamp": {
+        "selector": "#check-timestamp",
+        "description": "从指定时间开始分享（复选框）",
+        "type": "click"
+      },
+      "commentEditorContainer": {
+        "selector": "#input",
+        "description": "[新版] 评论区编辑器容器（brt 富文本编辑器），包含 .brt-editor",
+        "type": "container",
+        "notes": "容器内部含 div.brt-root > div.brt-editor[contenteditable=true]（实际可输入元素）和 div.brt-placeholder（占位文字）。占位文字变化如'你猜我的评论区在等待谁？'"
+      },
+      "commentEditor": {
+        "description": "[新版] 评论输入框（brt contentEditable div）",
+        "locator": {
+          "type": "shadow",
+          "path": [
+            { "host": "#commentapp", "shadow": false },
+            { "selector": ".brt-editor" }
+          ],
+          "fallbackSelector": "#input .brt-editor"
+        },
+        "capabilities": ["focus", "insertText", "clear", "readText"],
+        "interaction": {
+          "action": "insert_text",
+          "method": "cdp",
+          "notes": "contenteditable + React 管控。先 click 激活焦点，再用 CDP Input.insertText 输入，否则 React onChange 不触发"
+        }
+      },
+      "commentEditorPlaceholder": {
+        "selector": "#input .brt-placeholder",
+        "description": "[新版] 评论编辑器占位文本，如'你猜我的评论区在等待谁？'",
+        "type": "text"
+      },
+      "commentSubmitBtn": {
+        "description": "[新版] 发布评论按钮",
+        "locator": {
+          "type": "css",
+          "selector": "#pub > button",
+          "altSelectors": ["button.btn-submit", "[class*='submit']"]
+        },
+        "capabilities": ["click"],
+        "interaction": {
+          "action": "click",
+          "method": "dom",
+          "notes": "编辑器有文字时 class='active' 才可点击，提交后编辑器自动清空"
+        }
+      },
+      "commentApp": {
+        "selector": "#commentapp",
+        "description": "评论区容器",
+        "type": "container",
+        "notes": "B站评论区 A/B 测试中。新版 #input + #pub 直接渲染。旧版使用 bili-comments Web Component + Shadow DOM。"
+      },
+      "commentWebComponent": {
+        "description": "[旧版] 评论区 Web Component",
+        "locator": {
+          "type": "shadow",
+          "path": [
+            { "host": "bili-comments", "shadow": true },
+            { "selector": ".brt-editor, textarea" }
+          ]
+        },
+        "capabilities": ["focus", "insertText"],
+        "interaction": {
+          "action": "insert_text",
+          "method": "js_pierce",
+          "notes": "需 JS 穿透: document.querySelector('bili-comments').shadowRoot.querySelector('textarea')"
+        }
+      },
+      "commentSort": {
+        "selector": "#commentapp [class*='comment-order'], #commentapp [class*='order-tab']",
+        "description": "评论排序切换（按热度/按时间）",
+        "type": "click"
+      }
+    },
+    "dialogs": {
+      "shareDialog": {
+        "title": "分享面板",
+        "openBy": "shareButton",
+        "selectors": {
+          "copyLink": {
+            "selector": "#share-btn-inner.copy-link",
+            "description": "复制视频链接",
+            "type": "click"
+          },
+          "shareQRCode": {
+            "selector": ".video-share-qr",
+            "description": "手机扫码观看/分享",
+            "type": "text"
+          },
+          "shareDynamic": {
+            "selector": ".video-share-dynamic",
+            "description": "分享到动态",
+            "type": "click"
+          },
+          "shareWechat": {
+            "selector": ".video-share-wechat",
+            "description": "分享到微信",
+            "type": "click"
+          },
+          "shareQQ": {
+            "selector": ".video-share-qq",
+            "description": "分享到QQ",
+            "type": "click"
+          },
+          "shareWeibo": {
+            "selector": ".video-share-weibo",
+            "description": "分享到微博",
+            "type": "click"
+          },
+          "shareEmbed": {
+            "selector": ".video-share-embed",
+            "description": "嵌入代码",
+            "type": "click"
+          }
+        }
+      },
+      "coinDialog": {
+        "title": "投币弹窗",
+        "openBy": "coinButton",
+        "selectors": {
+          "coinCount": {
+            "selector": ".bili-coin-count",
+            "description": "选择投币数量",
+            "type": "click"
+          },
+          "coinSubmit": {
+            "selector": ".bili-coin-submit",
+            "description": "确认投币",
+            "type": "click"
+          }
+        }
+      },
+      "favDialog": {
+        "title": "收藏弹窗",
+        "openBy": "favButton",
+        "selectors": {
+          "newFavList": {
+            "selector": ".fav-new-list",
+            "description": "新建收藏夹",
+            "type": "click"
+          },
+          "favList": {
+            "selector": ".fav-list-item",
+            "description": "选择收藏夹",
+            "type": "click"
+          }
+        }
+      },
+      "settingDialog": {
+        "title": "播放器设置面板",
+        "openBy": "settingButton",
+        "selectors": {
+          "mirrorMode": {
+            "selector": "input[aria-label='镜像画面']",
+            "description": "镜像画面开关",
+            "type": "click"
+          },
+          "loopMode": {
+            "selector": "input[aria-label='单集循环']",
+            "description": "单集循环开关",
+            "type": "click"
+          },
+          "autoPlay": {
+            "selector": "input[aria-label='自动开播']",
+            "description": "自动开播开关",
+            "type": "click"
+          },
+          "dubSub": {
+            "selector": "input[aria-label='双语字幕']",
+            "description": "双语字幕开关",
+            "type": "click"
+          },
+          "aspectRatio": {
+            "selector": "input[aria-label='等比缩放']",
+            "description": "等比缩放",
+            "type": "click"
+          },
+          "hideBlackEdge": {
+            "selector": "input[aria-label='隐藏黑边']",
+            "description": "隐藏黑边",
+            "type": "click"
+          },
+          "lightOff": {
+            "selector": "input[aria-label='关灯模式']",
+            "description": "关灯模式",
+            "type": "click"
+          },
+          "energyBar": {
+            "selector": "input[aria-label='高能进度条']",
+            "description": "高能进度条",
+            "type": "click"
+          }
+        }
+      }
+    }
+  }
+}

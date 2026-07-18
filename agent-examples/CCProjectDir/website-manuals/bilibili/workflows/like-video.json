@@ -1,0 +1,9 @@
+{
+  "likeVideo": {
+    "description": "给当前视频点赞",
+    "startsOn": "视频播放页",
+    "steps": [
+      {"action": "click", "page": "视频播放页", "target": "likeButton"}
+    ]
+  }
+}

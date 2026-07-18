@@ -1,0 +1,12 @@
+{
+  "searchAndWatch": {
+    "description": "搜索视频并观看",
+    "path": "首页 → 搜索结果页 → 视频播放页",
+    "steps": [
+      {"action": "type", "page": "首页", "target": "searchInput", "params": {"text": "___搜索词___", "clear": true}},
+      {"action": "click", "page": "首页", "target": "searchButton"},
+      {"action": "wait", "params": {"ms": 1500}},
+      {"action": "click", "page": "搜索结果页", "target": "searchResultTitle"}
+    ]
+  }
+}

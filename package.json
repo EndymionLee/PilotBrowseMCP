@@ -1,0 +1,12 @@
+{
+  "name": "browser-mcp-runtime",
+  "version": "0.1.0",
+  "private": true,
+  "description": "AI Agent Browser Runtime - MCP Server + Chrome Extension",
+  "scripts": {
+    "server:dev": "cd server && npm run dev",
+    "server:build": "cd server && npm run build",
+    "extension:dev": "cd extension && npm run dev",
+    "extension:build": "cd extension && npm run build"
+  }
+}

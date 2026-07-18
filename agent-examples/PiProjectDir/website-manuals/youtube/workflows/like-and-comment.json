@@ -1,0 +1,11 @@
+{
+  "likeAndComment": {
+    "description": "一键点赞+评论",
+    "startsOn": "视频播放页",
+    "steps": [
+      {"action": "workflow", "target": "likeVideo"},
+      {"action": "wait", "params": {"ms": 500}},
+      {"action": "workflow", "target": "postComment"}
+    ]
+  }
+}

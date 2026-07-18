@@ -1,0 +1,11 @@
+{
+  "subscribeAndLike": {
+    "description": "点赞和投币视频",
+    "startsOn": "视频播放页",
+    "steps": [
+      {"action": "click", "page": "视频播放页", "target": "likeButton"},
+      {"action": "wait", "params": {"ms": 500}},
+      {"action": "click", "page": "视频播放页", "target": "coinButton"}
+    ]
+  }
+}

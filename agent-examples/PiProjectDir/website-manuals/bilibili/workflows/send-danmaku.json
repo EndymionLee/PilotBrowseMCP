@@ -1,0 +1,11 @@
+{
+  "sendDanmaku": {
+    "description": "发送弹幕",
+    "startsOn": "视频播放页",
+    "steps": [
+      {"action": "type", "page": "视频播放页", "target": "danmakuInput", "params": {"text": "___弹幕内容___", "clear": true}},
+      {"action": "wait", "params": {"ms": 500}},
+      {"action": "pressEnter", "description": "按回车发送弹幕"}
+    ]
+  }
+}

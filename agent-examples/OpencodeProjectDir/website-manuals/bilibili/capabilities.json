@@ -1,0 +1,38 @@
+{
+  "videoPage": {
+    "commentEditor": {
+      "supports": ["shadow-dom", "contenteditable", "react-controlled", "cdp-input-required"],
+      "unsupported": ["dom-type", "sendKeys"],
+      "recommendedAction": "insertText",
+      "recommendedMethod": "cdp",
+      "knownIssues": [
+        "普通 browser.type() 不触发 React onChange",
+        "需先 click 激活焦点，再用 CDP Input.insertText",
+        "编辑器在 #commentapp 容器内，非 Shadow DOM 但结构类似"
+      ]
+    },
+    "commentSubmitBtn": {
+      "supports": ["dom-click"],
+      "recommendedAction": "click",
+      "recommendedMethod": "dom",
+      "knownIssues": [
+        "编辑器为空时按钮不可点击（class 无 active）",
+        "输入后等待 ~500ms 让 active 类出现"
+      ]
+    },
+    "likeButton": {
+      "supports": ["dom-click"],
+      "recommendedAction": "click",
+      "recommendedMethod": "dom",
+      "knownIssues": []
+    }
+  },
+  "homepage": {
+    "searchInput": {
+      "supports": ["dom-type", "clear", "pressEnter"],
+      "recommendedAction": "type",
+      "recommendedMethod": "dom",
+      "knownIssues": []
+    }
+  }
+}

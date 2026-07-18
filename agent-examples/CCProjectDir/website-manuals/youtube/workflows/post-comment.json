@@ -1,0 +1,13 @@
+{
+  "postComment": {
+    "description": "发表评论",
+    "startsOn": "视频播放页",
+    "steps": [
+      {"action": "click", "page": "视频播放页", "target": "commentPlaceholder"},
+      {"action": "wait", "params": {"ms": 800}},
+      {"action": "type", "page": "视频播放页", "target": "commentInput", "params": {"text": "___评论内容___", "clear": true}},
+      {"action": "wait", "params": {"ms": 500}},
+      {"action": "click", "page": "视频播放页", "target": "commentSubmit"}
+    ]
+  }
+}

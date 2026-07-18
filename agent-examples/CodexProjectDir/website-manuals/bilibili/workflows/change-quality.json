@@ -1,0 +1,11 @@
+{
+  "changeQuality": {
+    "description": "切换视频清晰度",
+    "startsOn": "视频播放页",
+    "steps": [
+      {"action": "click", "page": "视频播放页", "target": "qualityButton"},
+      {"action": "wait", "params": {"ms": 500}},
+      {"action": "click", "page": "视频播放页", "selector": ".bpx-player-ctrl-quality .bpx-player-ctrl-quality-item", "description": "选择清晰度选项"}
+    ]
+  }
+}

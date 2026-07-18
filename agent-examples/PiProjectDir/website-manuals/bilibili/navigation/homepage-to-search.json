@@ -1,0 +1,17 @@
+{
+  "首页→搜索结果页": {
+    "from": "首页",
+    "to": "搜索结果页",
+    "steps": [
+      {"action": "type", "page": "首页", "selector": "input.nav-search-input", "params": {"text": "关键词", "clear": true}},
+      {"action": "click", "page": "首页", "selector": ".nav-search-btn"}
+    ],
+    "altSteps": [
+      {"action": "open", "url": "https://search.bilibili.com/all?keyword=关键词"}
+    ],
+    "backMethods": [
+      {"action": "click", "page": "搜索结果页", "selector": "a.left-entry__title[href='//www.bilibili.com']"},
+      {"action": "browser_back"}
+    ]
+  }
+}

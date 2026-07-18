@@ -1,0 +1,13 @@
+{
+  "首页→视频播放页": {
+    "from": "首页",
+    "to": "视频播放页",
+    "steps": [
+      {"action": "click", "page": "首页", "selector": "a.bili-video-card__image--link[href^='https://www.bilibili.com/video/']"}
+    ],
+    "backMethods": [
+      {"action": "click", "page": "视频播放页", "selector": "a.left-entry__title[href='//www.bilibili.com']", "description": "点击顶栏 首页"},
+      {"action": "browser_back", "description": "浏览器后退"}
+    ]
+  }
+}

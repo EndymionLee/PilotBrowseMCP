@@ -1,0 +1,9 @@
+{
+  "搜索结果页→视频播放页": {
+    "from": "搜索结果页",
+    "to": "视频播放页",
+    "steps": [
+      {"action": "click", "page": "搜索结果页", "selector": "ytd-video-renderer a.ytLockupMetadataViewModelTitle[href^='/watch']"}
+    ]
+  }
+}

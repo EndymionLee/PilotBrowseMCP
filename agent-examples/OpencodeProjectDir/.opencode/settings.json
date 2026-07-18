@@ -1,0 +1,15 @@
+{
+  "$schema": "https://opencode.ai/settings.json",
+  "permissions": {
+    "allow": [
+      "browser_tab_list",
+      "browser_tab_info",
+      "browser_tab_inspect",
+      "browser_tab_find",
+      "browser_tab_navigate",
+      "browser_tab_click",
+      "browser_tab_type",
+      "browser_tab_screenshot"
+    ]
+  }
+}

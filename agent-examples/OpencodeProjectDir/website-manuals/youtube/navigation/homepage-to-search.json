@@ -1,0 +1,17 @@
+{
+  "首页→搜索结果页": {
+    "from": "首页",
+    "to": "搜索结果页",
+    "steps": [
+      {"action": "type", "page": "首页", "selector": "input[name='search_query']", "params": {"text": "关键词"}},
+      {"action": "click", "page": "首页", "selector": "button[aria-label='搜索']"}
+    ],
+    "altSteps": [
+      {"action": "open", "url": "https://www.youtube.com/results?search_query=关键词"}
+    ],
+    "backMethods": [
+      {"action": "click", "page": "搜索结果页", "selector": "a[href='/']"},
+      {"action": "browser_back"}
+    ]
+  }
+}

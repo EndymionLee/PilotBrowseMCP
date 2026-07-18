@@ -1,0 +1,35 @@
+{
+  "manual": {
+    "site": "Bilibili (哔哩哔哩)",
+    "baseUrl": "https://www.bilibili.com/",
+    "date": "2026-07-15",
+    "description": "Bilibili 完整深度探索手册 - 包含首页、视频播放页、搜索结果页的交互元素和导航路径",
+    "explorationDepth": 2,
+    "pagesExplored": ["首页", "视频播放页", "搜索结果页"]
+  },
+  "siteMap": {
+    "首页": {
+      "url": "/",
+      "description": "Bilibili 首页 - 视频推荐流",
+      "childrenPages": ["视频播放页", "搜索结果页"],
+      "entryPoints": {
+        "videoCardImageLink": "点击视频卡片缩略图 → 进入视频播放页",
+        "searchSubmit": "搜索关键词 → 进入搜索结果页",
+        "navLinks": "顶栏导航 → 番剧/直播/游戏中心等",
+        "channelLinks": "频道分类 → 动态/热门/番剧等分区"
+      }
+    },
+    "视频播放页": {
+      "urlPattern": "/video/BV",
+      "description": "视频播放页 - 播放器、点赞投币收藏、弹幕、分享、UP主信息",
+      "from": "首页",
+      "entryAction": "点击视频卡片缩略图"
+    },
+    "搜索结果页": {
+      "urlPattern": "search.bilibili.com/all?keyword=",
+      "description": "搜索结果页 - 筛选排序、分类选项卡、分页",
+      "from": "首页",
+      "entryAction": "搜索关键词"
+    }
+  }
+}

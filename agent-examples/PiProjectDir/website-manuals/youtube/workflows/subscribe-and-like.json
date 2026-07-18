@@ -1,0 +1,11 @@
+{
+  "subscribeAndLike": {
+    "description": "订阅频道并点赞视频",
+    "startsOn": "视频播放页",
+    "steps": [
+      {"action": "click", "page": "视频播放页", "target": "subscribeButton"},
+      {"action": "wait", "params": {"ms": 500}},
+      {"action": "click", "page": "视频播放页", "target": "likeButton"}
+    ]
+  }
+}

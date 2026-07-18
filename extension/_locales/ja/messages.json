@@ -1,0 +1,61 @@
+{
+  "appName": { "message": "Pilot Browse MCP" },
+  "appVersion": { "message": "v0.2" },
+
+  "connected": { "message": "接続済み" },
+  "disconnected": { "message": "未接続" },
+  "shutdown": { "message": "停止済み" },
+  "statusPort": { "message": "ws://9456" },
+
+  "permCookies": { "message": "Cookie" },
+  "permCookiesDesc": { "message": "ウェブサイトのCookieを読み取る" },
+  "permStorage": { "message": "LocalStorage" },
+  "permStorageDesc": { "message": "ローカルストレージを読み取る" },
+  "permScreenshot": { "message": "スクリーンショット" },
+  "permScreenshotDesc": { "message": "ページのスクリーンショット" },
+  "permHtml": { "message": "ページHTML" },
+  "permHtmlDesc": { "message": "ページのソースコードを取得" },
+  "sectionPermissions": { "message": "許可" },
+  "noPermissions": { "message": "項目なし" },
+  "permissionsFailed": { "message": "読み込み失敗" },
+
+  "pickBtn": { "message": "選択" },
+  "pickBtnWaiting": { "message": "ページをクリック..." },
+  "pickInfo": { "message": "ページ上の要素をクリックしてください" },
+  "pickDescPlaceholder": { "message": "この要素は何ですか？" },
+  "pickSendBtn": { "message": "エージェントに送信" },
+  "pickSent": { "message": "送信済み" },
+  "sectionPick": { "message": "要素をマーク" },
+  "pickEsc": { "message": "Escでキャンセル" },
+
+  "recBtn": { "message": "録画" },
+  "recBtnStop": { "message": "停止" },
+  "recIdle": { "message": "待機中" },
+  "recRecording": { "message": "録画中..." },
+  "recStopped": { "message": "停止済み" },
+  "recStepCount": { "message": "$1 ステップ" },
+  "recNoSteps": { "message": "録画したステップなし" },
+  "sectionRec": { "message": "ワークフロー録画" },
+
+  "wfDescPlaceholder": { "message": "ワークフローの説明" },
+  "wfSaveBtn": { "message": "エージェントに送信" },
+  "wfSaving": { "message": "保存中..." },
+  "wfSaved": { "message": "保存済み" },
+  "wfSavedOffline": { "message": "サーバーオフライン、キュー待ち" },
+  "wfFailed": { "message": "保存失敗" },
+  "wfNoDesc": { "message": "説明を入力してください" },
+
+  "sectionTabs": { "message": "タブ" },
+  "refreshBtn": { "message": "更新" },
+  "noTabs": { "message": "タブなし" },
+  "loading": { "message": "読み込み中..." },
+  "loadFailed": { "message": "読み込み失敗" },
+  "untitled": { "message": "(無題)" },
+
+  "statusFailed": { "message": "失敗" },
+  "unknownError": { "message": "不明なエラー" },
+  "resetRetry": { "message": "リセットされました、再試行" },
+
+  "themeSwitch": { "message": "Toggle theme" },
+  "footer": { "message": "Agent Browser Runtime  ·  MCP" }
+}

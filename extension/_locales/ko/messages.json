@@ -1,0 +1,61 @@
+{
+  "appName": { "message": "Pilot Browse MCP" },
+  "appVersion": { "message": "v0.2" },
+
+  "connected": { "message": "연결됨" },
+  "disconnected": { "message": "연결 끊김" },
+  "shutdown": { "message": "종료됨" },
+  "statusPort": { "message": "ws://9456" },
+
+  "permCookies": { "message": "쿠키" },
+  "permCookiesDesc": { "message": "웹사이트 쿠키 읽기" },
+  "permStorage": { "message": "로컬스토리지" },
+  "permStorageDesc": { "message": "로컬 저장소 데이터 읽기" },
+  "permScreenshot": { "message": "스크린샷" },
+  "permScreenshotDesc": { "message": "페이지 스크린샷 캡처" },
+  "permHtml": { "message": "페이지 HTML" },
+  "permHtmlDesc": { "message": "페이지 소스 코드 가져오기" },
+  "sectionPermissions": { "message": "권한" },
+  "noPermissions": { "message": "항목 없음" },
+  "permissionsFailed": { "message": "불러오기 실패" },
+
+  "pickBtn": { "message": "선택" },
+  "pickBtnWaiting": { "message": "페이지 클릭..." },
+  "pickInfo": { "message": "페이지에서 요소를 클릭하세요" },
+  "pickDescPlaceholder": { "message": "이 요소는 무엇인가요?" },
+  "pickSendBtn": { "message": "에이전트에게 보내기" },
+  "pickSent": { "message": "전송됨" },
+  "sectionPick": { "message": "요소 표시" },
+  "pickEsc": { "message": "Esc 취소" },
+
+  "recBtn": { "message": "녹화" },
+  "recBtnStop": { "message": "중지" },
+  "recIdle": { "message": "대기 중" },
+  "recRecording": { "message": "녹화 중..." },
+  "recStopped": { "message": "중지됨" },
+  "recStepCount": { "message": "$1 단계" },
+  "recNoSteps": { "message": "녹화된 단계 없음" },
+  "sectionRec": { "message": "워크플로우 녹화" },
+
+  "wfDescPlaceholder": { "message": "워크플로우 설명" },
+  "wfSaveBtn": { "message": "에이전트에게 보내기" },
+  "wfSaving": { "message": "저장 중..." },
+  "wfSaved": { "message": "저장됨" },
+  "wfSavedOffline": { "message": "서버 오프라인, 대기 중" },
+  "wfFailed": { "message": "저장 실패" },
+  "wfNoDesc": { "message": "설명을 입력하세요" },
+
+  "sectionTabs": { "message": "탭" },
+  "refreshBtn": { "message": "새로고침" },
+  "noTabs": { "message": "탭 없음" },
+  "loading": { "message": "로딩 중..." },
+  "loadFailed": { "message": "로딩 실패" },
+  "untitled": { "message": "(제목 없음)" },
+
+  "statusFailed": { "message": "실패" },
+  "unknownError": { "message": "알 수 없는 오류" },
+  "resetRetry": { "message": "초기화됨, 다시 시도" },
+
+  "themeSwitch": { "message": "Toggle theme" },
+  "footer": { "message": "Agent Browser Runtime  ·  MCP" }
+}

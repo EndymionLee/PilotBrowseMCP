@@ -1,0 +1,10 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "mcp": {
+    "browser-mcp": {
+      "type": "local",
+      "command": ["npx", "tsx", ".\\BrowserPlugin\\server\\src\\index.ts"],
+      "enabled": true
+    }
+  }
+}

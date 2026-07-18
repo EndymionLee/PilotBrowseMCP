@@ -1,0 +1,245 @@
+{
+  "首页": {
+    "url": "https://www.bilibili.com/",
+    "selectors": {
+      "bilibiliLogo": {
+        "selector": "a.inner-logo[href='//www.bilibili.com']",
+        "description": "Bilibili Logo - 回到首页",
+        "type": "click"
+      },
+      "navHome": {
+        "selector": "a.left-entry__title[href='//www.bilibili.com']",
+        "description": "顶栏导航 - 首页",
+        "type": "click"
+      },
+      "navAnime": {
+        "selector": "a.default-entry[href='//www.bilibili.com/anime/']",
+        "description": "顶栏导航 - 番剧",
+        "type": "click",
+        "entersPage": true
+      },
+      "navLive": {
+        "selector": "a.default-entry[href='//live.bilibili.com']",
+        "description": "顶栏导航 - 直播",
+        "type": "click",
+        "entersPage": true
+      },
+      "navGame": {
+        "selector": "a.default-entry[href='//game.bilibili.com/platform']",
+        "description": "顶栏导航 - 游戏中心",
+        "type": "click",
+        "entersPage": true
+      },
+      "navMemberShop": {
+        "selector": "a.default-entry[href='//show.bilibili.com/platform/home.html']",
+        "description": "顶栏导航 - 会员购",
+        "type": "click",
+        "entersPage": true
+      },
+      "navManga": {
+        "selector": "a.default-entry[href='//manga.bilibili.com']",
+        "description": "顶栏导航 - 漫画",
+        "type": "click",
+        "entersPage": true
+      },
+      "navMatch": {
+        "selector": "a.default-entry[href='//www.bilibili.com/match/home/']",
+        "description": "顶栏导航 - 赛事",
+        "type": "click",
+        "entersPage": true
+      },
+      "navDownloadClient": {
+        "selector": "a.download-entry[href='//app.bilibili.com']",
+        "description": "顶栏 - 下载客户端",
+        "type": "click"
+      },
+      "searchInput": {
+        "selector": "input.nav-search-input",
+        "description": "搜索输入框",
+        "type": "type",
+        "notes": "输入后点击搜索按钮或按回车提交"
+      },
+      "searchButton": {
+        "selector": ".nav-search-btn",
+        "altSelector": "form#nav-searchform button[type='submit']",
+        "description": "搜索提交按钮",
+        "type": "click"
+      },
+      "searchForm": {
+        "selector": "form#nav-searchform",
+        "description": "搜索表单",
+        "type": "submit"
+      },
+      "vipEntry": {
+        "selector": "a.right-entry--vip",
+        "description": "顶栏右侧 - 大会员",
+        "type": "click",
+        "entersPage": true
+      },
+      "messageBtn": {
+        "selector": "a.right-entry__outside[href='//message.bilibili.com']",
+        "description": "顶栏右侧 - 消息",
+        "type": "click",
+        "entersPage": true
+      },
+      "dynamicBtn": {
+        "selector": "a.right-entry__outside[href='//t.bilibili.com/']",
+        "description": "顶栏右侧 - 动态",
+        "type": "click",
+        "entersPage": true
+      },
+      "favBtn": {
+        "selector": "a.right-entry__outside[data-header-fav-entry='true']",
+        "description": "顶栏右侧 - 收藏",
+        "type": "click",
+        "entersPage": true
+      },
+      "historyBtn": {
+        "selector": "a.right-entry__outside[href='//www.bilibili.com/history']",
+        "description": "顶栏右侧 - 历史",
+        "type": "click",
+        "entersPage": true
+      },
+      "creatorCenter": {
+        "selector": "a.right-entry__outside[href='//member.bilibili.com/platform/home']",
+        "description": "顶栏右侧 - 创作中心",
+        "type": "click",
+        "entersPage": true
+      },
+      "uploadBtn": {
+        "selector": "a[href='//member.bilibili.com/platform/upload/video/frame']",
+        "description": "顶栏右侧 - 投稿",
+        "type": "click",
+        "entersPage": true
+      },
+      "avatarBtn": {
+        "selector": "a.header-entry-mini[href^='//space.bilibili.com/']",
+        "description": "用户头像 - 进入个人空间",
+        "type": "click",
+        "entersPage": true
+      },
+      "avatarImg": {
+        "selector": "#app > div.bili-feed4 > div.bili-header.large-header > div.bili-header__bar > ul.right-entry > li.v-popover-wrap.header-avatar-wrap > div.header-avatar-wrap--container.mini-avatar--large > a.header-entry-mini > picture.v-img > img",
+        "description": "主页用户入口 - 用户头像图片元素（通过扩展拾取器标记）",
+        "type": "click",
+        "entersPage": true,
+        "notes": "超长精确路径选择器，由用户通过扩展拾取器标记。avatarBtn（简短选择器）是更稳定的替代方案。"
+      },
+      "channelDynamic": {
+        "selector": "a.channel-icons__item[href='//t.bilibili.com']",
+        "description": "频道图标 - 动态",
+        "type": "click",
+        "entersPage": true
+      },
+      "channelHot": {
+        "selector": "a.channel-icons__item[href='//www.bilibili.com/v/popular/all']",
+        "description": "频道图标 - 热门",
+        "type": "click",
+        "entersPage": true
+      },
+      "channelAnime": {
+        "selector": "a.channel-link[href='//www.bilibili.com/anime/']",
+        "description": "频道链接 - 番剧",
+        "type": "click",
+        "entersPage": true
+      },
+      "channelMovie": {
+        "selector": "a.channel-link[href='//www.bilibili.com/movie/']",
+        "description": "频道链接 - 电影",
+        "type": "click",
+        "entersPage": true
+      },
+      "channelGuochuang": {
+        "selector": "a.channel-link[href='//www.bilibili.com/guochuang/']",
+        "description": "频道链接 - 国创",
+        "type": "click",
+        "entersPage": true
+      },
+      "channelTV": {
+        "selector": "a.channel-link[href='//www.bilibili.com/tv/']",
+        "description": "频道链接 - 电视剧",
+        "type": "click",
+        "entersPage": true
+      },
+      "channelVariety": {
+        "selector": "a.channel-link[href='//www.bilibili.com/variety/']",
+        "description": "频道链接 - 综艺",
+        "type": "click",
+        "entersPage": true
+      },
+      "channelDocumentary": {
+        "selector": "a.channel-link[href='//www.bilibili.com/documentary/']",
+        "description": "频道链接 - 纪录片",
+        "type": "click",
+        "entersPage": true
+      },
+      "channelColumn": {
+        "selector": "a.channel-link__right[href='//www.bilibili.com/read/home/']",
+        "description": "频道右侧 - 专栏",
+        "type": "click",
+        "entersPage": true
+      },
+      "channelLive": {
+        "selector": "a.channel-link__right[href='//live.bilibili.com']",
+        "description": "频道右侧 - 直播",
+        "type": "click",
+        "entersPage": true
+      },
+      "channelActivity": {
+        "selector": "a.channel-link__right[href*='reward-activity-list']",
+        "description": "频道右侧 - 活动",
+        "type": "click",
+        "entersPage": true
+      },
+      "channelCheese": {
+        "selector": "a.channel-link__right[href='//www.bilibili.com/cheese/']",
+        "description": "频道右侧 - 课堂",
+        "type": "click",
+        "entersPage": true
+      },
+      "videoCardTitle": {
+        "selector": "h3.bili-video-card__info--tit",
+        "description": "视频卡片标题（首页推荐流）",
+        "type": "text"
+      },
+      "videoCardImageLink": {
+        "selector": "a.bili-video-card__image--link[href^='https://www.bilibili.com/video/']",
+        "description": "视频卡片缩略图链接",
+        "type": "click",
+        "entersPage": "视频播放页"
+      },
+      "videoCardOwner": {
+        "selector": "a.bili-video-card__info--owner",
+        "description": "视频卡片 - UP主链接",
+        "type": "click",
+        "entersPage": true
+      },
+      "videoCardStats": {
+        "selector": ".bili-video-card__stats--text",
+        "description": "视频卡片 - 播放量",
+        "type": "text"
+      },
+      "videoCardDuration": {
+        "selector": ".bili-video-card__stats__duration",
+        "description": "视频卡片 - 时长",
+        "type": "text"
+      },
+      "carouselBanner": {
+        "selector": "a.carousel-item",
+        "description": "轮播图/Banner 广告",
+        "type": "click",
+        "entersPage": true
+      },
+      "refreshBtn": {
+        "selector": "button.primary-btn.roll-btn",
+        "description": "换一换（刷新推荐）",
+        "type": "click"
+      },
+      "backToTop": {
+        "selector": "button.primary-btn.top-btn",
+        "description": "回到顶部",
+        "type": "click"
+      }
+    }
+  }
+}

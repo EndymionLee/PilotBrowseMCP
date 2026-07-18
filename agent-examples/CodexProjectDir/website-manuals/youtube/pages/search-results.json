@@ -1,0 +1,63 @@
+{
+  "搜索结果页": {
+    "urlPattern": "/results?search_query=",
+    "selectors": {
+      "searchInput": {
+        "selector": "input[name='search_query']",
+        "description": "搜索框（带已输入关键词）",
+        "type": "type"
+      },
+      "filterChips": {
+        "selector": "#chips",
+        "description": "筛选芯片条（全部/Shorts/未观看/已观看/视频/最近上传/直播）",
+        "type": "click"
+      },
+      "filterAll": {
+        "selector": "yt-chip-cloud-chip-renderer .iron-selected",
+        "altSelector": "yt-chip-cloud-chip-renderer:first-child",
+        "description": "筛选 - 全部",
+        "type": "click"
+      },
+      "filterShorts": {
+        "selector": "yt-chip-cloud-chip-renderer:has-text('Shorts')",
+        "description": "筛选 - Shorts",
+        "type": "click"
+      },
+      "filterUnwatched": {
+        "selector": "yt-chip-cloud-chip-renderer:has-text('未观看')",
+        "description": "筛选 - 未观看",
+        "type": "click"
+      },
+      "filterVideo": {
+        "selector": "yt-chip-cloud-chip-renderer:has-text('视频')",
+        "description": "筛选 - 视频",
+        "type": "click"
+      },
+      "filterRecent": {
+        "selector": "yt-chip-cloud-chip-renderer:has-text('最近上传')",
+        "description": "筛选 - 最近上传",
+        "type": "click"
+      },
+      "filterLive": {
+        "selector": "yt-chip-cloud-chip-renderer:has-text('直播')",
+        "description": "筛选 - 直播",
+        "type": "click"
+      },
+      "filterButton": {
+        "selector": "#filter-button",
+        "description": "过滤按钮（打开详细过滤选项）",
+        "type": "click"
+      },
+      "searchResultVideo": {
+        "selector": "ytd-video-renderer",
+        "description": "搜索结果中的视频卡片",
+        "type": "container"
+      },
+      "searchResultTitle": {
+        "selector": "ytd-video-renderer a.ytLockupMetadataViewModelTitle",
+        "description": "搜索结果视频标题",
+        "type": "click"
+      }
+    }
+  }
+}

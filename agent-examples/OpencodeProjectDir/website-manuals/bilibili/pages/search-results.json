@@ -1,0 +1,145 @@
+{
+  "搜索结果页": {
+    "urlPattern": "search.bilibili.com/all?keyword=",
+    "selectors": {
+      "searchInput": {
+        "selector": "input.search-input-el",
+        "description": "搜索输入框（带已输入关键词）",
+        "type": "type"
+      },
+      "searchButton": {
+        "selector": "button.vui_button--blue.search-button",
+        "description": "搜索按钮",
+        "type": "click"
+      },
+      "searchTabs": {
+        "selector": ".search-tabs",
+        "description": "分类选项卡（综合/视频/番剧/影视/直播/专栏/用户）",
+        "type": "click"
+      },
+      "tabComprehensive": {
+        "selector": "nav.vui_tabs--navbar a:first-child",
+        "altSelector": "nav.vui_tabs--navbar",
+        "description": "分类 - 综合",
+        "type": "click"
+      },
+      "tabVideo": {
+        "selector": "nav.vui_tabs--navbar a:nth-child(2)",
+        "description": "分类 - 视频",
+        "type": "click"
+      },
+      "tabAnime": {
+        "selector": "nav.vui_tabs--navbar a:nth-child(3)",
+        "description": "分类 - 番剧",
+        "type": "click"
+      },
+      "sortDefault": {
+        "selector": "button.vui_button--tab.vui_button--active:first-child",
+        "description": "排序 - 综合排序（默认）",
+        "type": "click"
+      },
+      "sortMostPlay": {
+        "selector": "button.vui_button--tab[text='最多播放']",
+        "altSelector": "button.vui_button--tab:nth-child(2)",
+        "description": "排序 - 最多播放",
+        "type": "click"
+      },
+      "sortLatest": {
+        "selector": "button.vui_button--tab:nth-child(3)",
+        "description": "排序 - 最新发布",
+        "type": "click"
+      },
+      "sortMostDanmaku": {
+        "selector": "button.vui_button--tab:nth-child(4)",
+        "description": "排序 - 最多弹幕",
+        "type": "click"
+      },
+      "sortMostFav": {
+        "selector": "button.vui_button--tab:nth-child(5)",
+        "description": "排序 - 最多收藏",
+        "type": "click"
+      },
+      "moreFilter": {
+        "selector": "button.i_button_more",
+        "description": "更多筛选（展开日期/时长过滤器）",
+        "type": "click"
+      },
+      "filterToday": {
+        "selector": "button[text='最近一天']",
+        "description": "日期筛选 - 最近一天",
+        "type": "click"
+      },
+      "filterWeek": {
+        "selector": "button[text='最近一周']",
+        "description": "日期筛选 - 最近一周",
+        "type": "click"
+      },
+      "filterHalfYear": {
+        "selector": "button[text='最近半年']",
+        "description": "日期筛选 - 最近半年",
+        "type": "click"
+      },
+      "filterUnder10min": {
+        "selector": "button[text='10分钟以下']",
+        "description": "时长筛选 - 10分钟以下",
+        "type": "click"
+      },
+      "filter10to30min": {
+        "selector": "button[text='10-30分钟']",
+        "description": "时长筛选 - 10-30分钟",
+        "type": "click"
+      },
+      "filter30to60min": {
+        "selector": "button[text='30-60分钟']",
+        "description": "时长筛选 - 30-60分钟",
+        "type": "click"
+      },
+      "filterOver60min": {
+        "selector": "button[text='60分钟以上']",
+        "description": "时长筛选 - 60分钟以上",
+        "type": "click"
+      },
+      "searchResultVideo": {
+        "selector": ".bili-video-card",
+        "description": "搜索结果中的视频卡片",
+        "type": "container"
+      },
+      "resultVideoTitle": {
+        "selector": "h3.bili-video-card__info--tit",
+        "description": "搜索结果视频标题",
+        "type": "text"
+      },
+      "resultVideoCard": {
+        "selector": ".bili-video-card__image--link",
+        "description": "搜索结果视频卡片链接",
+        "type": "click",
+        "entersPage": "视频播放页"
+      },
+      "pagination": {
+        "selector": ".vui_pagenation--btn",
+        "description": "分页按钮",
+        "type": "click"
+      },
+      "pagePrev": {
+        "selector": "button[text='上一页']",
+        "description": "上一页",
+        "type": "click"
+      },
+      "pageNext": {
+        "selector": "button[text='下一页']",
+        "description": "下一页",
+        "type": "click"
+      },
+      "pageNumbers": {
+        "selector": "button.vui_pagenation--btn-num",
+        "description": "页码数字按钮",
+        "type": "click"
+      },
+      "feedbackBtn": {
+        "selector": ".search-feedback",
+        "description": "搜索反馈按钮",
+        "type": "click"
+      }
+    }
+  }
+}

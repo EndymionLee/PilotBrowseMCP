@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pilot Browse MCP</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --bg-primary: #f5f5f7; --bg-secondary: #e8e8ed; --bg-card: #ffffff;
+      --bg-hover: #f0f0f5; --border: #d2d2d7;
+      --text-primary: #1d1d1f; --text-secondary: #6e6e73; --text-muted: #aeaeb2;
+      --accent: #0071e3; --accent-soft: rgba(0,113,227,0.08);
+      --green: #30b94e; --red: #ff3b30;
+      --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+      --perm-cookies: rgba(0,113,227,0.1); --perm-storage: rgba(110,86,207,0.1);
+      --perm-screenshot: rgba(255,149,0,0.1); --perm-html: rgba(48,185,78,0.1);
+      --logo-start: #0071e3; --logo-end: #6e56cf;
+    }
+    :root.dark {
+      --bg-primary: #0f1119; --bg-secondary: #181b28; --bg-card: #1e2235;
+      --bg-hover: #262b44; --border: #2a2f45;
+      --text-primary: #e8eaed; --text-secondary: #9aa0b4; --text-muted: #5c6180;
+      --accent: #5b8def; --accent-soft: rgba(91,141,239,0.12);
+      --green: #34c759; --red: #ff453a;
+      --shadow: 0 1px 3px rgba(0,0,0,0.2);
+      --perm-cookies: rgba(91,141,239,0.15); --perm-storage: rgba(124,92,252,0.15);
+      --perm-screenshot: rgba(255,159,10,0.15); --perm-html: rgba(52,199,89,0.15);
+      --logo-start: #5b8def; --logo-end: #7c5cfc;
+    }
+    body { width:380px; font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',Roboto,sans-serif; font-size:13px; color:var(--text-primary); background:var(--bg-primary); overflow-x:hidden; }
+    ::-webkit-scrollbar { width:3px; }
+    ::-webkit-scrollbar-track { background:transparent; }
+    ::-webkit-scrollbar-thumb { background:var(--border); border-radius:2px; }
+
+    .header { padding:16px 16px 0; display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
+    .header-left { display:flex; align-items:center; gap:10px; }
+    .logo { width:28px; height:28px; border-radius:8px; background:linear-gradient(135deg,var(--logo-start),var(--logo-end)); display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:700; color:#fff; flex-shrink:0; }
+    .header h1 { font-size:14px; font-weight:600; color:var(--text-primary); letter-spacing:-0.2px; }
+    .header-actions { display:flex; gap:4px; }
+    .header-badge { font-size:10px; color:var(--text-muted); background:var(--bg-card); padding:2px 6px; border-radius:4px; font-weight:500; border:1px solid var(--border); }
+
+    .status-bar { margin:0 16px 12px; padding:10px 14px; border-radius:10px; background:var(--bg-card); border:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; box-shadow:var(--shadow); }
+    .status-left { display:flex; align-items:center; gap:10px; }
+    .status-indicator { position:relative; width:10px; height:10px; }
+    .status-indicator .dot { width:10px; height:10px; border-radius:50%; background:var(--text-muted); }
+    .status-indicator .dot.connected { background:var(--green); box-shadow:0 0 8px rgba(48,185,78,0.4); }
+    .status-indicator .dot.disconnected { background:var(--red); box-shadow:0 0 8px rgba(255,59,48,0.3); }
+    .status-indicator .pulse { position:absolute; inset:-4px; border-radius:50%; }
+    .status-indicator .pulse.connected { border-color:rgba(48,185,78,0.3); animation:pulse 2s ease-in-out infinite; }
+    @keyframes pulse { 0%,100% { transform:scale(1); opacity:1; } 50% { transform:scale(1.4); opacity:0; } }
+    .status-text { font-size:12px; font-weight:500; }
+    .status-text.connected { color:var(--green); }
+    .status-text.disconnected { color:var(--red); }
+    .status-detail { font-size:10px; color:var(--text-muted); background:var(--bg-secondary); padding:3px 8px; border-radius:4px; font-family:'SF Mono',Monaco,monospace; }
+
+    .card { margin:0 16px 10px; border-radius:10px; background:var(--bg-card); border:1px solid var(--border); overflow:hidden; box-shadow:var(--shadow); }
+    .card-header { display:flex; align-items:center; justify-content:space-between; padding:10px 14px; border-bottom:1px solid var(--border); }
+    .card-title { font-size:11px; font-weight:600; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.5px; }
+    .card-body.no-padding { padding:0; }
+
+    .perms-list { display:flex; flex-direction:column; }
+    .perm-item { display:flex; align-items:center; justify-content:space-between; padding:9px 14px; border-bottom:1px solid var(--border); }
+    .perm-item:last-child { border-bottom:none; }
+    .perm-item:hover { background:var(--bg-hover); }
+    .perm-info { display:flex; align-items:center; gap:10px; }
+    .perm-icon { width:28px; height:28px; border-radius:7px; display:flex; align-items:center; justify-content:center; font-size:13px; flex-shrink:0; }
+
+    .switch { position:relative; width:38px; height:22px; flex-shrink:0; cursor:pointer; }
+    .switch input { opacity:0; width:0; height:0; position:absolute; }
+    .switch .slider { position:absolute; inset:0; background:var(--bg-secondary); border-radius:11px; border:1px solid var(--border); }
+    .switch .slider::before { content:''; position:absolute; top:2px; left:2px; width:16px; height:16px; border-radius:50%; background:var(--text-muted); }
+    .switch input:checked+.slider { background:var(--accent); border-color:var(--accent); }
+    .switch input:checked+.slider::before { transform:translateX(16px); background:#fff; }
+
+    .tab-item { display:flex; align-items:center; gap:10px; padding:9px 14px; cursor:pointer; border-bottom:1px solid var(--border); }
+    .tab-item:last-child { border-bottom:none; }
+    .tab-item:hover { background:var(--bg-hover); }
+    .tab-item.active { background:var(--accent-soft); border-left:3px solid var(--accent); }
+    .tab-favicon { width:16px; height:16px; border-radius:3px; flex-shrink:0; background:var(--bg-secondary); display:flex; align-items:center; justify-content:center; font-size:9px; font-weight:600; color:var(--text-muted); }
+    .tab-info { flex:1; min-width:0; }
+    .tab-info .title { font-size:12px; font-weight:500; color:var(--text-primary); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .tab-info .url { font-size:10px; color:var(--text-muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-top:1px; }
+    .tab-count { font-size:10px; color:var(--text-muted); background:var(--bg-secondary); padding:1px 7px; border-radius:8px; white-space:nowrap; flex-shrink:0; }
+    .tabs-empty { padding:24px 14px; text-align:center; color:var(--text-muted); font-size:12px; }
+    .tabs-empty .icon { font-size:24px; margin-bottom:6px; opacity:0.4; }
+
+    .rec-btn { border:none; border-radius:6px; cursor:pointer; font-size:11px; font-weight:600; padding:5px 14px; }
+    .rec-btn.go { background:var(--red); color:#fff; }
+    .rec-btn.go:hover { background:#e0352b; }
+    .rec-btn.stop { background:var(--bg-secondary); color:var(--text-primary); border:1px solid var(--border); }
+    .rec-btn.stop:hover { background:var(--bg-hover); }
+    .rec-dot { display:inline-block; width:7px; height:7px; border-radius:50%; background:var(--text-muted); }
+    .rec-dot.on { background:var(--red); box-shadow:0 0 5px rgba(255,59,48,0.5); animation:blink 1s infinite; }
+    @keyframes blink { 50% { opacity:0.4; } }
+    .rec-steps { max-height:100px; overflow-y:auto; border-top:1px solid var(--border); font-size:10px; }
+    .rec-step { padding:3px 14px; color:var(--text-secondary); display:flex; gap:4px; }
+    .rec-step .s-type { color:var(--accent); min-width:32px; }
+
+    .wf-input { width:100%; font-size:11px; background:var(--bg-secondary); border:1px solid var(--border); border-radius:6px; padding:6px 10px; color:var(--text-primary); resize:vertical; min-height:50px; font-family:inherit; }
+    .wf-input:focus { outline:none; border-color:var(--accent); }
+    .wf-row { display:flex; gap:6px; align-items:center; padding:6px 14px; }
+    .wf-row:last-child { padding-bottom:10px; }
+    .wf-btn { background:var(--accent); color:#fff; border:none; border-radius:6px; padding:5px 14px; cursor:pointer; font-size:11px; font-weight:500; }
+    .wf-btn:hover { opacity:0.85; }
+    .wf-btn:disabled { opacity:0.4; cursor:default; }
+
+    .btn-icon { width:28px; height:28px; border:1px solid var(--border); border-radius:6px; background:transparent; color:var(--text-secondary); cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:14px; }
+    .btn-icon:hover { background:var(--bg-hover); color:var(--text-primary); }
+
+    .footer { padding:8px 16px 14px; display:flex; align-items:center; justify-content:center; gap:8px; font-size:10px; color:var(--text-muted); }
+    .footer-dot { width:2px; height:2px; border-radius:50%; background:var(--border); }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <div class="header-left">
+      <div class="logo">B</div>
+      <h1 id="lblAppName">Pilot Browse MCP</h1>
+    </div>
+    <div class="header-actions">
+      <select id="langSelect" style="font-size:10px;background:var(--bg-card);border:1px solid var(--border);border-radius:4px;padding:2px 4px;color:var(--text-muted);cursor:pointer;">
+        <option value="en">EN</option>
+        <option value="zh_CN">中</option>
+        <option value="ko">KO</option>
+        <option value="ja">JA</option>
+      </select>
+      <button class="btn-icon" id="themeBtn" title="Toggle theme">&#9790;</button>
+      <span class="header-badge">v0.2</span>
+    </div>
+  </div>
+
+  <div class="status-bar">
+    <div class="status-left">
+      <div class="status-indicator">
+        <div class="dot disconnected" id="statusDot"></div>
+        <div class="pulse" id="statusPulse"></div>
+      </div>
+      <span class="status-text disconnected" id="statusText">Disconnected</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:6px;">
+      <span class="status-detail" id="statusDetail">ws://9456</span>
+      <button class="btn-icon" id="shutdownBtn" title="Stop Server" style="font-size:8px;width:18px;height:18px;border-radius:50%;opacity:0.5;">&#x2715;</button>
+    </div>
+  </div>
+
+  <!-- Permissions -->
+  <div class="card">
+    <div class="card-header" id="permHeader" style="cursor:pointer;">
+      <span class="card-title" id="lblPermissions">Permissions</span>
+      <span id="permArrow" style="font-size:10px;color:var(--text-muted);">&#9654;</span>
+    </div>
+    <div class="card-body no-padding" id="permBody" style="display:none;">
+      <div class="perms-list" id="permsList">
+        <div class="tabs-empty"><div style="font-size:11px;" id="lblPermLoading">Loading...</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pick Element -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title" id="lblPick">Mark Element</span>
+      <button class="rec-btn go" id="pickBtn">Pick</button>
+    </div>
+    <div id="pickResult" style="display:none;padding:6px 14px;font-size:10px;border-top:1px solid var(--border);">
+      <div id="pickInfo" style="color:var(--text-secondary);margin-bottom:4px;"></div>
+      <div style="display:flex;gap:4px;">
+        <input id="pickDesc" placeholder="What is this element for?" style="flex:1;font-size:10px;background:var(--bg-secondary);border:1px solid var(--border);border-radius:4px;padding:3px 6px;color:var(--text-primary);" />
+        <button class="wf-btn" id="pickSendBtn" style="font-size:10px;padding:3px 8px;">Send to Agent</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Workflow -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title" id="lblRec">Record Workflow</span>
+      <button class="rec-btn go" id="recBtn">Record</button>
+    </div>
+    <div class="wf-row" style="padding-top:4px;">
+      <span class="rec-dot" id="recDot"></span>
+      <span style="font-size:11px;color:var(--text-muted);flex:1;" id="recStatus">Idle</span>
+      <span style="font-size:10px;color:var(--text-muted);" id="recCount"></span>
+    </div>
+    <div class="rec-steps" id="recSteps"></div>
+    <div class="wf-row" style="flex-direction:column;align-items:stretch;border-top:1px solid var(--border);">
+      <textarea class="wf-input" id="wfDesc" placeholder="Workflow description"></textarea>
+    </div>
+    <div class="wf-row">
+      <span style="font-size:10px;color:var(--text-muted);flex:1;" id="wfStatus"></span>
+      <button class="wf-btn" id="wfSaveBtn">Send to Agent</button>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title" id="lblTabs">Tabs</span>
+      <button class="btn-icon" id="refreshBtn" title="Refresh">&#8635;</button>
+    </div>
+    <div class="card-body no-padding">
+      <div id="tabsList">
+        <div class="tabs-empty"><div class="icon">&#9634;</div><div id="lblTabLoading">Loading...</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer" id="lblFooter">Agent Browser Runtime  ·  MCP</div>
+
+  <script type="module" src="./index.ts"></script>
+</body>
+</html>

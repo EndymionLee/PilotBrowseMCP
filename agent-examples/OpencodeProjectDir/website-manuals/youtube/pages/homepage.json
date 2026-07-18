@@ -1,0 +1,107 @@
+{
+  "首页": {
+    "url": "https://www.youtube.com/",
+    "selectors": {
+      "menuToggle": {
+        "selector": "button[aria-label='导视']",
+        "description": "侧边栏展开/收起按钮",
+        "type": "click"
+      },
+      "youtubeLogo": {
+        "selector": "a[id='logo'][href='/']",
+        "description": "YouTube Logo - 回到首页",
+        "type": "click"
+      },
+      "searchInput": {
+        "selector": "input[name='search_query']",
+        "description": "搜索输入框",
+        "type": "type",
+        "notes": "输入后按回车或点搜索按钮"
+      },
+      "searchButton": {
+        "selector": "button[aria-label='搜索']",
+        "altSelector": ".ytSearchboxComponentSearchButton",
+        "description": "搜索提交按钮",
+        "type": "click"
+      },
+      "voiceSearch": {
+        "selector": "button[aria-label='通过语音搜索内容']",
+        "description": "语音搜索按钮",
+        "type": "click"
+      },
+      "createButton": {
+        "selector": "button[aria-label='创建']",
+        "description": "创建内容按钮",
+        "type": "click"
+      },
+      "notifications": {
+        "selector": "button[aria-label='通知']",
+        "description": "通知按钮",
+        "type": "click"
+      },
+      "accountMenu": {
+        "selector": "#avatar-btn",
+        "description": "账号菜单按钮",
+        "type": "click"
+      },
+      "sidebarHome": {
+        "selector": "ytd-mini-guide-entry-renderer a[aria-label='首页']",
+        "description": "侧边栏/迷你导航 - 首页",
+        "type": "click"
+      },
+      "sidebarShorts": {
+        "selector": "ytd-mini-guide-entry-renderer a[aria-label='Shorts']",
+        "description": "侧边栏 - Shorts",
+        "type": "click"
+      },
+      "sidebarSubscriptions": {
+        "selector": "ytd-mini-guide-entry-renderer a[aria-label='订阅']",
+        "description": "侧边栏 - 订阅",
+        "type": "click"
+      },
+      "sidebarYou": {
+        "selector": "ytd-mini-guide-entry-renderer a[aria-label='我']",
+        "description": "侧边栏 - 我",
+        "type": "click"
+      },
+      "videoCardTitle": {
+        "selector": "a.ytLockupMetadataViewModelTitle[href^='/watch']",
+        "description": "视频卡片标题（首页推荐流）",
+        "type": "click",
+        "entersPage": "视频播放页"
+      },
+      "videoCardThumbnail": {
+        "selector": "a.ytLockupViewModelContentImage[href^='/watch']",
+        "description": "视频卡片缩略图",
+        "type": "click",
+        "entersPage": "视频播放页"
+      },
+      "videoCardChannel": {
+        "selector": "a.ytAttributedStringLink[href^='/@']",
+        "description": "视频卡片 - 频道链接",
+        "type": "click"
+      },
+      "videoCardChannelAvatar": {
+        "selector": "div[aria-label^='前往频道']",
+        "description": "视频卡片 - 频道头像",
+        "type": "click"
+      },
+      "videoCardMoreOptions": {
+        "selector": "button[aria-label='其他操作']",
+        "description": "视频卡片 - 更多操作菜单",
+        "type": "click"
+      },
+      "shortsCardThumbnail": {
+        "selector": "a.shortsLockupViewModelHostEndpoint[href^='/shorts/']",
+        "description": "Shorts 卡片缩略图",
+        "type": "click",
+        "entersPage": "Shorts页"
+      },
+      "sidebarExpandMore": {
+        "selector": "ytd-guide-collapsible-entry-renderer #expander-item",
+        "description": "侧边栏 - 展开更多频道",
+        "type": "click"
+      }
+    }
+  }
+}

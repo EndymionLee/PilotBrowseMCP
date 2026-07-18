@@ -1,0 +1,12 @@
+{
+  "shareVideo": {
+    "description": "复制视频分享链接",
+    "startsOn": "视频播放页",
+    "steps": [
+      {"action": "click", "page": "视频播放页", "target": "shareButton"},
+      {"action": "wait", "params": {"ms": 800}},
+      {"action": "readText", "page": "视频播放页", "target": "dialogs.shareDialog.shareUrlInput"},
+      {"action": "click", "page": "视频播放页", "selector": "body", "description": "关闭分享面板"}
+    ]
+  }
+}
