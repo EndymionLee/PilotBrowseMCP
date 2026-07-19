@@ -19,10 +19,11 @@
 ```
 website-manuals/<site>/
 ├── README.md              # ← 手册概览（先读此文件！）
-├── meta.json              # 站点信息 + 页面地图
+├── meta.json              # 站点信息 + 页面地图 + API 映射
 ├── pages/                 # 每个页面一个 JSON（升级版交互模型）
 ├── navigation/            # 导航路径
 ├── workflows/             # 操作流程（含降级策略）
+├── apis/                  # API 定义（匹配到 workflow）
 └── capabilities.json      # 浏览器能力模型（自动生成）
 ```
 

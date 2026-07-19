@@ -19,10 +19,11 @@ After exploration, the manual is saved in `website-manuals/`:
 ```
 website-manuals/<site>/
 ├── README.md              # Manual overview (read this first!)
-├── meta.json              # Site info + page map
+├── meta.json              # Site info + page map + API map
 ├── pages/                 # Page interaction models (JSON)
 ├── navigation/            # Navigation paths
 ├── workflows/             # Operation workflows (with fallback)
+├── apis/                  # API definitions (mapped to workflows)
 └── capabilities.json      # Browser capability model
 ```
 
