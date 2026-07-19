@@ -134,18 +134,26 @@ Browser
 | Category | Tool | What it does |
 |----------|------|--------------|
 | **Page** | `browser.get_markdown` | Convert page to clean Markdown via Readability + Turndown |
+| | `browser.get_text` | Get plain text of the page (lighter than get_html) |
+| | `browser.get_html` | Get raw HTML of the page (heavy, last resort) |
 | | `browser.find` | Find element by visible text, aria-label, or role |
 | | `browser.current_page` | Get current tab URL and title |
 | | `browser.inspect_page` | See page structure (headings, sections, buttons) |
 | | `browser.query` | Query elements by CSS selector (penetrates Shadow DOM) |
 | | `browser.evaluate` | Execute JS in page context |
+| | `browser.extract_article` | Extract article metadata (title, author, date, body) |
+| | `browser.extract_table` | Extract HTML table as JSON array |
+| | `browser.extract_links` | Extract all links from the page |
+| | `browser.extract_images` | Extract image info (src, alt, size) |
 | **Actions** | `browser.click` | Click an element (composed:true for Shadow DOM) |
 | | `browser.type` | Type text into input or contenteditable |
 | | `browser.scroll` | Scroll the page |
+| | `browser.wait` | Wait for a given number of milliseconds |
 | | `browser.wait_for_element` | Wait for an element to appear |
 | **Saving** | `browser.save_content` | Auto-detect main content and save to file (zero LLM tokens) |
 | | `browser.save_xpath` | Extract by XPath and save to file |
 | **Network** | `browser.start_network_monitor` | Start intercepting requests |
+| | `browser.stop_network_monitor` | Stop monitoring and clear cached requests |
 | | `browser.network.search` | Search cached requests by keyword, method, status |
 | | `browser.network.replay` | Replay a cached request |
 | **Tabs** | `browser.list_tabs` | List all open tabs |
@@ -153,8 +161,12 @@ Browser
 | **Recording** | `workflow.list_recordings` | View recordings from popup |
 | | `workflow.get_recording` | Get recording details |
 | | `workflow.list_elements` | View marked elements |
+| | `workflow.get_element` | Get marked element details |
+| | `workflow.list` | List processed workflows in website-manuals |
+| | `workflow.add_element` | Save a user-marked element to pages/ |
 | | `workflow.generate` | Save a processed workflow to website-manuals |
 | **Data** | `browser.cookies` | Read cookies (requires permission) |
+| | `browser.local_storage` | Read LocalStorage (requires permission) |
 | | `browser.screenshot` | Take screenshot (requires permission) |
 | | `browser.permissions.list / grant / revoke` | Permission management |
 

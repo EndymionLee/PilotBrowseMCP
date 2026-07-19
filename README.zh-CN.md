@@ -136,18 +136,26 @@ Browser
 | 分类             | 工具                                          | 功能                                      |
 | ---------------- | --------------------------------------------- | ----------------------------------------- |
 | **页面**   | `browser.get_markdown`                      | Readability + Turndown 转 Markdown        |
+|                  | `browser.get_text`                          | 获取页面纯文本（比 get_html 轻）          |
+|                  | `browser.get_html`                          | 获取页面原始 HTML（重，最后兜底）         |
 |                  | `browser.find`                              | 按文字/aria-label/role 查找元素           |
 |                  | `browser.current_page`                      | 获取当前标签页信息                        |
 |                  | `browser.inspect_page`                      | 查看页面结构骨架                          |
 |                  | `browser.query`                             | CSS 选择器查询（穿透 Shadow DOM）         |
 |                  | `browser.evaluate`                          | 执行 JS，处理复杂交互                     |
+|                  | `browser.extract_article`                   | 提取文章元数据（标题/作者/日期/正文）      |
+|                  | `browser.extract_table`                     | 提取表格为 JSON                           |
+|                  | `browser.extract_links`                     | 提取页面所有链接                          |
+|                  | `browser.extract_images`                    | 提取图片信息（src/alt/尺寸）              |
 | **操作**   | `browser.click`                             | 点击元素（composed:true 穿透 Shadow DOM） |
 |                  | `browser.type`                              | 输入文本（支持 contenteditable）          |
 |                  | `browser.scroll`                            | 滚动页面                                  |
+|                  | `browser.wait`                              | 等待指定毫秒数                            |
 |                  | `browser.wait_for_element`                  | 等待元素出现                              |
 | **保存**   | `browser.save_content`                      | 自动检测正文并保存（零 token）            |
 |                  | `browser.save_xpath`                        | 按 XPath 提取并保存                       |
 | **网络**   | `browser.start_network_monitor`             | 开始拦截请求                              |
+|                  | `browser.stop_network_monitor`              | 停止拦截并清除缓存                        |
 |                  | `browser.network.search`                    | 搜索缓存的请求                            |
 |                  | `browser.network.replay`                    | 重放请求                                  |
 | **标签页** | `browser.list_tabs`                         | 列出所有标签页                            |
@@ -155,8 +163,12 @@ Browser
 | **录制**   | `workflow.list_recordings`                  | 查看录制                                  |
 |                  | `workflow.get_recording`                    | 获取录制详情                              |
 |                  | `workflow.list_elements`                    | 查看标记的元素                            |
+|                  | `workflow.get_element`                      | 获取标记元素详情                          |
+|                  | `workflow.list`                             | 列出已生成的 workflow                     |
+|                  | `workflow.add_element`                      | 保存用户标记的元素到 pages/               |
 |                  | `workflow.generate`                         | 生成 workflow                             |
 | **数据**   | `browser.cookies`                           | 读取 Cookie（需授权）                     |
+|                  | `browser.local_storage`                     | 读取 LocalStorage（需授权）               |
 |                  | `browser.screenshot`                        | 截图（需授权）                            |
 |                  | `browser.permissions.list / grant / revoke` | 权限管理                                  |
 
