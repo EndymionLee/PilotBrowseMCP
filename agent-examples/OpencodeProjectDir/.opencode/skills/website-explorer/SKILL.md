@@ -32,10 +32,11 @@ Exploration order:
 ```
 website-manuals/<site>/
 ├── README.md              # Manual overview (read this first!)
-├── meta.json              # Site info + page map
+├── meta.json              # Site info + page map + API map
 ├── pages/                 # Page interaction models (JSON)
 ├── navigation/            # Navigation paths
 ├── workflows/             # Operation workflows (with fallback)
+├── apis/                  # API definitions (mapped to skills/workflows)
 └── capabilities.json      # Browser capability model (auto-generated)
 ```
 
@@ -124,6 +125,119 @@ Want page content
 
 ---
 
+## Large Text Content Scraping Rules
+
+**When scraping articles, novels, documents or other large text: never send the content to the LLM and then have the LLM write it to disk.**
+
+Correct flow:
+
+```
+1. browser.get_markdown / get_text / get_html to fetch content directly
+2. Use workflow.save_file or files tools to write directly to disk
+3. LLM only decides "what to scrape, where to save" -- does not touch the raw content
+```
+
+> A novel can be hundreds of thousands of characters. Sending it through the LLM and back doubles token consumption.
+> Tools read and write directly, content never enters the LLM context.
+
+---
+
+## Batch Tasks: Use Python Scripts
+
+For batch, concurrent, or multi-page scraping tasks, don't use MCP tools one by one. Generate Python scripts based on the manual and exploration experience.
+
+### When to Use
+
+- Batch scraping articles/novel chapters (hundreds of pages)
+- Concurrent API requests (pagination, batch queries)
+- Data collection using APIs discovered in the manual
+
+### Approach
+
+```
+1. Reference API definitions (apis/) and page elements (pages/) from the manual
+2. Generate a Python script using requests / aiohttp to call APIs directly
+3. If browser is needed, use Playwright with selectors from the manual
+4. Script writes directly to disk, bypassing the LLM
+```
+
+### Example
+
+Manual shows the novel API is `GET /api/chapter?id={id}`, returns JSON:
+
+```python
+import requests, json, time
+
+# From manual apis/
+API = "https://examplesite.com/api/chapter"
+HEADERS = {"Cookie": "session=xxx"}
+
+ids = list(range(1, 101))
+for i, cid in enumerate(ids):
+    resp = requests.get(API, params={"id": cid}, headers=HEADERS)
+    with open(f"chapters/{cid}.json", "w", encoding="utf-8") as f:
+        json.dump(resp.json(), f, ensure_ascii=False)
+    print(f"[{i+1}/100] chapter {cid} done")
+    time.sleep(0.5)
+```
+
+### Rules
+
+- Batch tasks always use scripts, never call MCP tools one by one in an LLM loop
+- API endpoints, params, cookies come from the manual
+- Script only returns a summary to the LLM (N succeeded, M failed)
+
+---
+
+## Network Monitoring (API-First Strategy)
+
+SPA pages (React/Vue) load data via XHR/Fetch, the HTML is just a shell. Extracting data from API responses beats parsing DOM. Use three network tools:
+
+| Tool | Purpose |
+|------|---------|
+| `start_network_monitor` | Start intercepting requests. Call before interacting with a page |
+| `network.search` | Search cached requests. Filter by keyword / urlPattern / method / statusCode / mimeType |
+| `network.replay` | Replay a cached request with fresh response |
+
+### When to Use
+
+| Scenario | Approach | Token Savings |
+|----------|----------|---------------|
+| Search listings / products / content | Monitor -> search API -> extract from JSON | 1/5 of DOM parsing or less |
+| Pagination / load more | Find API -> replay with modified offset/page | Skip clicking "next page" |
+| Product details / price / stock | Find API -> replay for latest values | One request vs full page load |
+
+### Strategy
+
+```
+Before interacting:
+  Call start_network_monitor first
+
+After interacting:
+  Try network.search to find the data you need via API
+  └─ Found -> extract from JSON (token-efficient, structured)
+  └─ Not found -> fall back to get_markdown / query / get_text
+
+When replaying:
+  Need fresh data -> network.replay the request
+  Need next page -> modify params and replay
+```
+
+### Example
+
+```
+Open the target site, call start_network_monitor first,
+search for a keyword in the search box,
+then call network.search({ mimeType: "application/json", keyword: "list" })
+Extract data from the JSON response.
+Want next page -> find the API requestId, call network.replay
+```
+
+> API first, DOM second. Network monitoring works best on SPAs where most data loads via API.
+> Server-rendered pages still rely on get_markdown / query.
+
+---
+
 ## Exploration Process
 
 ### Step 0: Prepare
@@ -133,6 +247,9 @@ const tabs = await mcp({tool:"browser_mcp_browser.list_tabs"})
 const tab = tabs.find(t => t.active)
 const TAB_ID = tab.id
 const BASE_URL = tab.url
+
+// Start network monitor to cache all XHR/Fetch requests
+await mcp({tool:"browser_mcp_browser.start_network_monitor", args:{tabId: TAB_ID}})
 ```
 
 ### Step 1: Light Scan (`lightScan`, Preferred)
@@ -207,6 +324,8 @@ Subpage: Video Page
   -> Test input interaction modes
   -> Save to pages/video-page.json
   -> Save navigation path
+  -> Search network requests, discover APIs
+  -> Save to apis/<name>.json
   -> Go back
 ```
 
@@ -225,6 +344,16 @@ async function exploreSubPage(tabId, parentPageKey, entrySelector, subPageKey, d
   await pierceScan(tabId, subPageKey)
   await testInputCapabilities(tabId, subPageKey)
 
+  // API discovery: search network requests from page interaction
+  const apis = await mcp({tool:"browser_mcp_browser.network.search", args:{
+    tabId,
+    mimeType: "application/json",
+    limit: 30
+  }})
+  if (apis.results?.length) {
+    saveApis(tabId, subPageKey, apis.results)
+  }
+
   // Go back: browser back button or click the logo
 }
 ```
@@ -240,9 +369,49 @@ async function exploreSubPage(tabId, parentPageKey, entrySelector, subPageKey, d
     "Home": { "url": "/", "childrenPages": ["Video Page", "Search Results"] },
     "Video Page": { "urlPattern": "/video/", "from": "Home" },
     "Search Results": { "urlPattern": "/search?keyword=", "from": "Home" }
+  },
+  "apiMap": {
+    "search": { "method": "GET", "urlPattern": "/api/search?keyword=", "mimeType": "application/json", "usedBy": ["searchVideo", "searchBook"] },
+    "productDetail": { "method": "GET", "urlPattern": "/api/product/*", "mimeType": "application/json", "usedBy": ["getProductInfo"] }
   }
 }
 ```
+
+- `apiMap` records all discovered APIs for the site
+- `usedBy` links to workflow names, meaning the workflow can use this API instead of DOM operations
+
+#### `apis/<name>.json` -- API definition (mapped to workflows)
+
+Records APIs discovered via network monitoring, linked to workflows. When executing, prefer API over DOM.
+
+```json
+{
+  "searchProducts": {
+    "description": "Search product listing",
+    "method": "GET",
+    "url": "https://api.examplesite.com/search",
+    "params": {
+      "keyword": { "type": "string", "required": true, "source": "user_input" },
+      "page": { "type": "number", "default": 1 }
+    },
+    "response": {
+      "type": "json",
+      "fields": ["id", "name", "price", "sales"]
+    },
+    "usedBy": ["searchProductsWorkflow"],
+    "discoveredAt": "2026-07-17"
+  }
+}
+```
+
+| Field | Description |
+|-------|-------------|
+| `method` / `url` | HTTP method and endpoint |
+| `params` | Parameter list, marks which come from user input |
+| `response.fields` | Key fields in the API response |
+| `usedBy` | Links to `workflows/` names |
+
+**Rule:** If the current workflow has a matching API definition, use `network.replay` to get data instead of operating the page DOM.
 
 #### `pages/<page>.json`
 
