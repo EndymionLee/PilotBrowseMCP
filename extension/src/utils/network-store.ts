@@ -36,6 +36,7 @@ export interface NetworkSearchParams {
   method?: string;
   statusCode?: number;
   mimeType?: string;
+  sort?: 'latest' | 'oldest' | 'largest' | 'smallest';
   limit?: number;
   offset?: number;
 }
@@ -192,6 +193,7 @@ export class NetworkStore {
       method,
       statusCode,
       mimeType,
+      sort = 'latest',
       limit = 50,
       offset = 0,
     } = params;
@@ -236,6 +238,18 @@ export class NetworkStore {
 
       return true;
     });
+
+    // 排序
+    if (sort === 'oldest') {
+      filtered.sort((a, b) => a.timestamp - b.timestamp);
+    } else if (sort === 'largest') {
+      filtered.sort((a, b) => (b.response?.bodySize || b.response?.body?.length || 0) - (a.response?.bodySize || a.response?.body?.length || 0));
+    } else if (sort === 'smallest') {
+      filtered.sort((a, b) => (a.response?.bodySize || a.response?.body?.length || 0) - (b.response?.bodySize || b.response?.body?.length || 0));
+    } else {
+      // latest: 按时间倒序（默认行为）
+      filtered.sort((a, b) => b.timestamp - a.timestamp);
+    }
 
     const total = filtered.length;
     const paged = filtered.slice(offset, offset + limit);
