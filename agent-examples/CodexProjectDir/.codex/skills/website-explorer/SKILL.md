@@ -132,7 +132,7 @@ Want page content
 Correct flow:
 
 ```
-1. browser.get_markdown / get_text / get_html to fetch content directly
+1. browser_get_markdown / get_text / get_html to fetch content directly
 2. Use workflow.save_file or files tools to write directly to disk
 3. LLM only decides "what to scrape, where to save" -- does not touch the raw content
 ```
@@ -191,46 +191,43 @@ for i, cid in enumerate(ids):
 
 ## Network Monitoring (API-First Strategy)
 
-SPA pages (React/Vue) load data via XHR/Fetch, the HTML is just a shell. Extracting data from API responses beats parsing DOM. Use three network tools:
+SPA pages (React/Vue) load data via XHR/Fetch, the HTML is just a shell. Extracting data from API responses beats parsing DOM. Use these network tools:
 
 | Tool | Purpose |
 |------|---------|
-| `start_network_monitor` | Start intercepting requests. Call before interacting with a page |
-| `network.search` | Search cached requests. Filter by keyword / urlPattern / method / statusCode / mimeType |
-| `network.replay` | Replay a cached request with fresh response |
+| `start_network_monitor` | Start intercepting and caching requests |
+| `stop_network_monitor` | Stop monitoring (cache preserved for replay) |
+| `browser_network_clear_cache` | Clear cached requests without stopping monitoring |
+| `browser_network_search` | Search cached requests. Filter by keyword / urlPattern / method / statusCode / mimeType / sort |
+| `browser_network_detail` | Get full request details (URL, method, headers, body, status, timing, size) |
+| `browser_network_wait` | Wait for a matching request to arrive and complete, replaces fixed delay |
+| `browser_network_replay` | Replay with overrides (query/headers/body) + extract (JSON path) |
+| `browser_network_export` | Export as curl / fetch / Python / HAR code |
+| `browser_network_analyze` | Analyze site API structure: catalog, purpose, data flow, replay templates |
+| `browser_network_override` | Set response override rules (body/status/header interception) |
 
 ### When to Use
 
-| Scenario | Approach | Token Savings |
-|----------|----------|---------------|
-| Search listings / products / content | Monitor -> search API -> extract from JSON | 1/5 of DOM parsing or less |
-| Pagination / load more | Find API -> replay with modified offset/page | Skip clicking "next page" |
-| Product details / price / stock | Find API -> replay for latest values | One request vs full page load |
+| Scenario | Approach | Effect |
+|----------|----------|--------|
+| Search listings / products / content | Monitor -> search API -> extract from JSON | 1/5 tokens vs DOM |
+| Pagination / load more | replay + overrides to modify page/offset | Skip page rendering |
+| Product details / price / stock | replay for latest values | Single request vs full page |
+| Wait for an API after clicking | click/type then browser_network_wait on URL pattern | Replaces fixed delay, more reliable |
+| Understand site API structure | browser_network_analyze after exploring | Output can be saved to apis/ |
+| Testing / debugging / bypass | browser_network_override with response rules | -- |
 
-### Strategy
-
-```
-Before interacting:
-  Call start_network_monitor first
-
-After interacting:
-  Try network.search to find the data you need via API
-  └─ Found -> extract from JSON (token-efficient, structured)
-  └─ Not found -> fall back to get_markdown / query / get_text
-
-When replaying:
-  Need fresh data -> network.replay the request
-  Need next page -> modify params and replay
-```
-
-### Example
+### Pipeline
 
 ```
-Open the target site, call start_network_monitor first,
-search for a keyword in the search box,
-then call network.search({ mimeType: "application/json", keyword: "list" })
-Extract data from the JSON response.
-Want next page -> find the API requestId, call network.replay
+start_network_monitor -> interact with page -> browser_network_search
+                                   |
+                                   +-> browser_network_detail -> inspect details
+                                   |     +-> browser_network_replay (overrides + extract)
+                                   |     +-> browser_network_export (code generation)
+                                   |     +-> browser_network_analyze (API structure)
+                                   |
+                                   +-> browser_network_wait (wait for specific request)
 ```
 
 > API first, DOM second. Network monitoring works best on SPAs where most data loads via API.
@@ -243,26 +240,26 @@ Want next page -> find the API requestId, call network.replay
 ### Step 0: Prepare
 
 ```javascript
-const tabs = await mcp({tool:"browser_mcp_browser.list_tabs"})
+const tabs = await mcp({tool:"browser_mcp_browser_list_tabs"})
 const tab = tabs.find(t => t.active)
 const TAB_ID = tab.id
 const BASE_URL = tab.url
 
 // Start network monitor to cache all XHR/Fetch requests
-await mcp({tool:"browser_mcp_browser.start_network_monitor", args:{tabId: TAB_ID}})
+await mcp({tool:"browser_mcp_browser_start_network_monitor", args:{tabId: TAB_ID}})
 ```
 
 ### Step 1: Light Scan (`lightScan`, Preferred)
 
 ```javascript
 // Get current page URL and title
-const info = await mcp({tool:"browser_mcp_browser.current_page", args:{tabId: TAB_ID}})
+const info = await mcp({tool:"browser_mcp_browser_current_page", args:{tabId: TAB_ID}})
 
 // Get page structure summary
-const structure = await mcp({tool:"browser_mcp_browser.inspect_page", args:{tabId: TAB_ID}})
+const structure = await mcp({tool:"browser_mcp_browser_inspect_page", args:{tabId: TAB_ID}})
 
 // Scan interactive elements
-const interactives = await mcp({tool:"browser_mcp_browser.query", args:{
+const interactives = await mcp({tool:"browser_mcp_browser_query", args:{
   tabId: TAB_ID,
   selector: `input, textarea, [contenteditable], [role=textbox],
     button, [role=button], a[href], select,
@@ -271,26 +268,26 @@ const interactives = await mcp({tool:"browser_mcp_browser.query", args:{
 }})
 
 // Get readable content (preferred)
-const markdown = await mcp({tool:"browser_mcp_browser.get_markdown", args:{tabId: TAB_ID}})
+const markdown = await mcp({tool:"browser_mcp_browser_get_markdown", args:{tabId: TAB_ID}})
 ```
 
 ### Step 1 Alt: Deep Scan (`deepScan`, fallback)
 
 ```javascript
 // Upgrade when light scan is not enough
-const fullText = await mcp({tool:"browser_mcp_browser.get_text", args:{tabId: TAB_ID}})
+const fullText = await mcp({tool:"browser_mcp_browser_get_text", args:{tabId: TAB_ID}})
 
 // Last resort
-const html = await mcp({tool:"browser_mcp_browser.get_html", args:{tabId: TAB_ID}})
+const html = await mcp({tool:"browser_mcp_browser_get_html", args:{tabId: TAB_ID}})
 
 // Scan Shadow DOM containers
-const shadowHosts = await mcp({tool:"browser_mcp_browser.query", args:{
+const shadowHosts = await mcp({tool:"browser_mcp_browser_query", args:{
   tabId: TAB_ID,
   selector: 'x-comments, *[id*="shadow"], *[class*="shadow"]'
 }})
 
 // Scan entry links
-const entryLinks = await mcp({tool:"browser_mcp_browser.query", args:{
+const entryLinks = await mcp({tool:"browser_mcp_browser_query", args:{
   tabId: TAB_ID, selector: "a[href]"
 }})
 ```
@@ -338,14 +335,14 @@ async function exploreSubPage(tabId, parentPageKey, entrySelector, subPageKey, d
     steps: [{action: "click", page: parentPageKey, selector: entrySelector}]
   })
 
-  await mcp({tool:"browser_mcp_browser.click", args:{tabId, selector: entrySelector}})
-  await mcp({tool:"browser_mcp_browser.wait", args:{tabId, ms: 1500}})
+  await mcp({tool:"browser_mcp_browser_click", args:{tabId, selector: entrySelector}})
+  await mcp({tool:"browser_mcp_browser_wait", args:{tabId, ms: 1500}})
 
   await pierceScan(tabId, subPageKey)
   await testInputCapabilities(tabId, subPageKey)
 
   // API discovery: search network requests from page interaction
-  const apis = await mcp({tool:"browser_mcp_browser.network.search", args:{
+  const apis = await mcp({tool:"browser_mcp_browser_network_search", args:{
     tabId,
     mimeType: "application/json",
     limit: 30
@@ -411,7 +408,7 @@ Records APIs discovered via network monitoring, linked to workflows. When execut
 | `response.fields` | Key fields in the API response |
 | `usedBy` | Links to `workflows/` names |
 
-**Rule:** If the current workflow has a matching API definition, use `network.replay` to get data instead of operating the page DOM.
+**Rule:** If the current workflow has a matching API definition, use `browser_network_replay` to get data instead of operating the page DOM.
 
 #### `pages/<page>.json`
 
@@ -486,7 +483,7 @@ Records APIs discovered via network monitoring, linked to workflows. When execut
       "supports": ["shadow-dom", "contenteditable", "cdp-input-required"],
       "unsupported": ["dom-type"],
       "recommendedMethod": "cdp",
-      "knownIssues": ["browser.type() fails due to React state control"]
+      "knownIssues": ["browser_type() fails due to React state control"]
     }
   }
 }

@@ -17,9 +17,10 @@ cd ../extension && npm run build
 1. 打开 Chrome, 进入 `chrome://extensions/`
 2. 开启右上角 **开发者模式**
 3. 点击 **加载已解压的扩展程序**
-4. 选择 `D:\MyC\AILearn\BrowserPlugin\extension\dist`
+4. 选择项目目录下的 `extension/dist`
 
 确认扩展出现在列表中，图标显示在工具栏。
+> 如果使用 `chrome.debugger` 相关功能，需在扩展管理页开启"允许访问文件网址"。
 
 ## Step 3: 启动 MCP Server
 
@@ -39,16 +40,14 @@ node dist/index.js
 
 点击工具栏中的 Pilot Browse MCP 图标打开弹窗。
 
-![popup]
-
 弹窗显示:
 - 状态: "已连接到 MCP Server"（绿色圆点）
-- 权限: 四个待授权项（+）
+- 权限: 待授权项（Cookie / LocalStorage / 截图 / HTML）
 - 标签页列表
 
 如果显示"未连接"，等几秒重试。
 
-## Step 5: 测试基本功能
+## Step 5: 测试功能
 
 ### 5a: 基础测试
 
@@ -57,74 +56,54 @@ cd scripts
 npx tsx smoke-test.ts
 ```
 
-预期: 2 通过, 0 失败
-
 ### 5b: 手动测试工具调用
 
-创建一个测试脚本 `scripts/test-tools.js`：
+确认 Server 运行中后，在 Claude Code 或支持 MCP 的客户端中配置连接，然后输入:
 
-```javascript
-import { spawn } from 'child_process';
-const server = spawn('node', ['server/dist/index.js']);
+> "列出当前浏览器中打开的标签页"
 
-// 手动发送 MCP 请求
-function request(method, params = {}) {
-  const id = Date.now();
-  server.stdin.write(JSON.stringify({ jsonrpc: '2.0', id, method, params }) + '\n');
-}
+> "打开 https://example.com，把页面内容转成 Markdown"
 
-server.stdout.on('data', (d) => {
-  const lines = d.toString().trim().split('\n');
-  for (const line of lines) {
-    try {
-      const msg = JSON.parse(line);
-      console.log('响应:', JSON.stringify(msg, null, 2));
-    } catch {}
-  }
-});
-
-// 延迟等待 Server 就绪
-setTimeout(() => {
-  // 列出标签页
-  request('tools/call', { name: 'browser.list_tabs', arguments: {} });
-}, 2000);
-
-setTimeout(() => process.exit(), 5000);
-```
-
-```bash
-npx tsx scripts/test-tools.js
-```
+> "在百度搜索'天气预报'，监听网络请求，把 API 数据给我"
 
 ### 5c: 测试权限系统
 
 1. 打开扩展弹窗
-2. 看到四个待授权项: Cookie, LocalStorage, 截图, HTML
-3. 点击 "Cookie" 旁的 "+" 授权
-4. 验证: Agent 调用 `browser.cookies` 时不再返回权限错误
+2. 看到待授权项: Cookie, LocalStorage, 截图, HTML
+3. 点击各项目旁的 "+" 授权
+4. 验证: Agent 调用敏感 API 时不再返回权限错误
 
-### 5d: 测试网络监听 (P0 功能)
+### 5d: 测试网络功能
 
-在弹窗中先授权所有权限，然后:
+打开任意网页后:
 
-1. 打开任意网页（如 `https://example.com`）
-2. 获取该标签页 ID:
-   ```
+```
+1. 获取该标签页 ID:
    browser.list_tabs
-   ```
-3. 启动监听:
-   ```
-   browser.start_network_monitor(tabId=xxx)
-   ```
-4. 刷新页面
-5. 搜索请求:
-   ```
-   browser.network.search(tabId=xxx, keyword="api")
-   ```
+
+2. 启动监听:
+   browser.start_network_monitor({ tabId })
+
+3. 刷新页面或操作页面触发 API
+
+4. 搜索请求:
+   browser.network.search({ tabId, keyword: "api" })
+
+5. 查看请求详情:
+   browser.network.get({ requestId })
+
 6. 重放请求:
-   ```
-   browser.network.replay(requestId="xxx")
-   ```
+   browser.network.replay({ requestId })
+
+7. 等待某个 API:
+   browser.network.wait({ tabId, urlPattern: "/api/search" })
+
+8. 导出代码:
+   browser.network.export({ requestId, format: "curl" })
+
+9. 分析站点 API:
+   browser.network.analyze({ tabId })
+```
 
 ## Step 6: 配置 AI Agent
 
@@ -137,58 +116,65 @@ npx tsx scripts/test-tools.js
   "mcpServers": {
     "browser-mcp": {
       "command": "node",
-      "args": ["D:\\MyC\\AILearn\\BrowserPlugin\\server\\dist\\index.js"]
+      "args": ["<项目目录>/server/dist/index.js"]
     }
   }
 }
 ```
 
-或者开发模式 (tsx watch):
+或者开发模式:
 
 ```json
 {
   "mcpServers": {
     "browser-mcp": {
       "command": "npx",
-      "args": ["tsx", "D:\\MyC\\AILearn\\BrowserPlugin\\server\\src\\index.ts"]
+      "args": ["tsx", "<项目目录>/server/src/index.ts"]
     }
   }
 }
 ```
 
-然后向 Claude Code 提问:
-
-> "帮我列出当前浏览器中打开的标签页"
-
-或者:
-
-> "打开 https://example.com，然后把页面内容转成 Markdown 给我"
-
 ## 测试清单
 
 - [ ] Server 启动无报错
-- [ ] Extension 加载成功，无错误
+- [ ] Extension 加载成功
 - [ ] Popup 显示 "已连接"
-- [ ] `browser.wait` 测试通过
 - [ ] `browser.list_tabs` 返回标签页列表
-- [ ] `browser.get_markdown` 返回 Markdown 内容
-- [ ] `browser.click` / `browser.type` 操作页面元素
-- [ ] `browser.cookies` 权限控制正常
+- [ ] `browser.open / navigate` 打开页面
+- [ ] `browser.get_markdown` 返回 Markdown
+- [ ] `browser.click / type / scroll` 操作页面
+- [ ] `browser.query` 查询元素
+- [ ] `browser.evaluate` 执行 JS
+- [ ] `browser.find` 按文字查找元素
+- [ ] `browser.extract_article / table / links / images` 提取内容
+- [ ] `browser.cookies / local_storage` 权限控制正常
 - [ ] `browser.screenshot` 权限控制正常
-- [ ] `browser.network.search` 找到网络请求
-- [ ] `browser.network.replay` 成功重放
+- [ ] `browser.inspect_page` 查看页面结构
+- [ ] `browser.save_content / save_xpath` 保存文件
+- [ ] `browser.start_network_monitor` 开启监听
+- [ ] `browser.network.search` 搜索请求
+- [ ] `browser.network.get` 查请求详情
+- [ ] `browser.network.wait` 等待 API 返回
+- [ ] `browser.network.replay` 重放请求
+- [ ] `browser.network.export` 导出代码
+- [ ] `browser.network.analyze` 分析 API 结构
+- [ ] 工作流录制 + workflow.generate
 
 ## 常见问题
 
 **问题**: Popup 显示 "未连接"
-**解决**: 
-1. 确认 Server 正在运行
-2. 确认 WebSocket 端口是 9456
+**解决**:
+1. 确认 Server 正在运行（有控制台日志输出）
+2. 确认 WebSocket 端口是 9456（未被占用）
 3. 在扩展管理页确认扩展已启用
-4. 重启扩展 (禁用再启用)
+4. 重启扩展（禁用再启用）
 
 **问题**: 工具调用返回 "Extension 未连接"
 **解决**: 等待几秒让 WebSocket 自动重连，查看 Server 日志确认连接状态
 
 **问题**: 调用敏感 API 返回权限错误
 **解决**: 打开扩展弹窗，点击对应的 "+" 按钮授权
+
+**问题**: network.search 返回空
+**解决**: 先确认调用了 start_network_monitor，然后操作页面触发 API 调用（刷新、搜索、翻页等）

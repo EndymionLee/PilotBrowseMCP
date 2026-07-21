@@ -4,8 +4,8 @@ import type { ExtensionConnection } from '../transport/extension-ws.js';
 import { defineTool } from '../lib/tool-factory.js';
 
 export function registerFindTools(server: McpServer, conn: ExtensionConnection): void {
-  defineTool(server, conn, 'browser.find', {
-    description: 'Find elements on the page by visible text, aria-label, placeholder, role, or tag. No CSS selectors needed -- describe what you are looking for in natural language. Returns matched elements with a selector ready for browser.click or browser.type. Match priority: aria-label > visible text > placeholder > alt > title. Supports waitFor to wait for dynamic content before searching.',
+  defineTool(server, conn, 'browser_find', {
+    description: 'Find elements on the page by visible text, aria-label, placeholder, role, or tag. No CSS selectors needed -- describe what you are looking for in natural language. Returns matched elements with a selector ready for browser.click or browser.type. Match priority: aria-label > visible text > placeholder > alt > title. Supports waitFor to wait for dynamic content before searching. Parameters: tabId (required, number), text (optional, string), role (optional, string), type (optional, string), tag (optional, string), waitFor (optional, string), timeout (optional, number, default 10000). Returns: array of matched elements with selector, tag, text, matchType, boundingBox.',
     inputSchema: z.object({
       tabId: z.number().describe('Tab ID'),
       text: z.string().optional().describe('Visible text to find, e.g. "Login", "Next page", "Search"'),

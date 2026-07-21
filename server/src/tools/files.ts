@@ -9,10 +9,10 @@ import { logger } from '../lib/logger.js';
 const ALLOWED_EXTS = ['.md', '.txt', '.html', '.json', '.csv'];
 
 export function registerFileTools(server: McpServer, conn: ExtensionConnection): void {
-  defineTool(server, conn, 'browser.inspect_page', {
-    description: 'Inspect the page structure: headings, content areas, tables, lists, forms. Returns tag names, IDs, and classes only -- no full content. Very lightweight (a few tokens). Use this to understand page layout before deciding how to extract or save content.',
+  defineTool(server, conn, 'browser_inspect_page', {
+    description: 'Inspect the page structure: headings, content areas, tables, lists, forms. Returns tag names, IDs, and classes only -- no full content. Very lightweight (a few tokens). Use this to understand page layout before deciding how to extract or save content. Parameters: tabId (required). Returns: page structure summary.',
     inputSchema: z.object({
-      tabId: z.number().describe('Tab ID'),
+      tabId: z.number().describe('Tab ID, required'),
     }),
   }, async (args) => {
     const { tabId } = args as any;
@@ -32,8 +32,8 @@ export function registerFileTools(server: McpServer, conn: ExtensionConnection):
     return { textLength: pageInfo.text.length, textPreview: pageInfo.text.slice(0, 200), structure };
   });
 
-  defineTool(server, conn, 'browser.save_content', {
-    description: 'Auto-detect the main content of the page and save it directly to a local file. Uses Readability algorithm (same as get_markdown) to identify the primary content area. Content flows from the browser to disk without entering the LLM context. Best for saving articles, novels, blog posts. If the auto-detection is inaccurate, use browser.inspect_page first to find the right selectors, then browser.save_xpath.',
+  defineTool(server, conn, 'browser_save_content', {
+    description: 'Auto-detect the main content of the page and save it directly to a local file. Uses Readability algorithm (same as get_markdown) to identify the primary content area. Content flows from the browser to disk without entering the LLM context. Best for saving articles, novels, blog posts. If the auto-detection is inaccurate, use browser.inspect_page first to find the right selectors, then browser.save_xpath. Parameters: filePath (required, string), tabId (optional, number, defaults to active tab). Returns: confirmation with file path and size.',
     inputSchema: z.object({
       filePath: z.string().describe('File path, e.g. "output/article.md" or "D:/novels/chapter1.txt"'),
       tabId: z.number().optional().describe('Tab ID, defaults to active tab'),
@@ -53,8 +53,8 @@ export function registerFileTools(server: McpServer, conn: ExtensionConnection):
     return `Saved "${r.title}" to ${resolved} (${(size / 1024).toFixed(1)}KB)`;
   });
 
-  defineTool(server, conn, 'browser.save_xpath', {
-    description: 'Extract text from elements matching an XPath expression and save to a local file. Use browser.inspect_page to find the page structure first, then construct the XPath. Examples: "//article//p" for all paragraphs, "//div[@id="content"]//text()" for all text nodes. Content goes directly to disk, not through the LLM.',
+  defineTool(server, conn, 'browser_save_xpath', {
+    description: 'Extract text from elements matching an XPath expression and save to a local file. Use browser.inspect_page to find the page structure first, then construct the XPath. Examples: "//article//p" for all paragraphs, "//div[@id=\\"content\\"]//text()" for all text nodes. Content goes directly to disk, not through the LLM. Parameters: filePath (required, string), tabId (required, number), xpath (required, string). Returns: confirmation with node count and file size.',
     inputSchema: z.object({
       filePath: z.string().describe('File path'),
       tabId: z.number().describe('Tab ID'),

@@ -12,8 +12,8 @@ const RECORDINGS_DIR = path.resolve('recordings');
 const MANUALS_BASE = path.resolve(process.env.MANUALS_DIR || 'E:\\PiTest\\website-manuals');
 
 export function registerWorkflowTools(server: McpServer, conn: ExtensionConnection): void {
-  defineTool(server, conn, 'workflow.list_recordings', {
-    description: 'List raw operation recordings sent by the user from the extension popup. Each recording captures what the user did on a website (clicks, inputs) along with their description. The agent reviews these to understand the workflow, then calls workflow.generate to save a proper workflow file to website-manuals.',
+  defineTool(server, conn, 'workflow_list_recordings', {
+    description: 'List raw operation recordings sent by the user from the extension popup. Each recording captures clicks, inputs, and description. The agent reviews these to understand the workflow, then calls workflow.generate to save a proper workflow file. Parameters: none. Returns: array of recordings with name, description, site, stepCount, recordedAt, url.',
     inputSchema: z.object({}),
   }, async () => {
     try {
@@ -31,8 +31,8 @@ export function registerWorkflowTools(server: McpServer, conn: ExtensionConnecti
     } catch { return { recordings: [] }; }
   });
 
-  defineTool(server, conn, 'workflow.get_recording', {
-    description: 'Get the raw steps of a user recording. Returns each step with action type (click/type), element selector, and input value. The agent reviews this to understand the workflow, then calls workflow.generate to save a proper workflow file.',
+  defineTool(server, conn, 'workflow_get_recording', {
+    description: 'Get the raw steps of a user recording. Returns each step with action type (click/type), element selector, and input value. The agent reviews this to understand the workflow, then calls workflow.generate to save a proper workflow file. Parameters: name (required, string, from list_recordings). Returns: recording object with steps array.',
     inputSchema: z.object({
       name: z.string().describe('Recording name from workflow.list_recordings'),
     }),
@@ -44,8 +44,8 @@ export function registerWorkflowTools(server: McpServer, conn: ExtensionConnecti
     catch { throw new Error(`Recording "${name}" not found`); }
   });
 
-  defineTool(server, conn, 'workflow.generate', {
-    description: 'Save a processed workflow to website-manuals/<site>/workflows/. The agent reviews raw recordings (workflow.get_recording) to understand the user workflow, then uses this tool to generate a properly formatted workflow file. After saving, automatically rebuilds the comprehensive manual. Format: {"workflowName":{"description":"...","startsOn":"Home","steps":[{"action":"click","page":"Home","target":"searchInput"},{"action":"type","page":"Home","target":"searchInput","params":{"text":"___text___"}}]}}',
+  defineTool(server, conn, 'workflow_generate', {
+    description: 'Save a processed workflow to website-manuals/<site>/workflows/. The agent reviews raw recordings to understand the user workflow, then uses this tool to generate a properly formatted workflow file. After saving, automatically rebuilds the comprehensive manual. Parameters: site (required, string), workflowName (required, string), data (required, object with description, startsOn, steps). Returns: confirmation with path and site.',
     inputSchema: z.object({
       site: z.string().describe('Site directory name, e.g. "youtube", "examplesite"'),
       workflowName: z.string().describe('Workflow name, e.g. "searchVideo", "postComment"'),
@@ -67,8 +67,8 @@ export function registerWorkflowTools(server: McpServer, conn: ExtensionConnecti
     return { success: true, path: `${safeSite}/workflows/${safeName}.json`, site: safeSite };
   });
 
-  defineTool(server, conn, 'workflow.list', {
-    description: 'List processed workflows in website-manuals. These are workflows the agent has already processed and saved.',
+  defineTool(server, conn, 'workflow_list', {
+    description: 'List processed workflows in website-manuals. These are workflows the agent has already processed and saved. Parameters: none. Returns: array of workflows with name, site, description, stepCount.',
     inputSchema: z.object({}),
   }, async () => {
     const workflows: any[] = [];
@@ -92,8 +92,8 @@ export function registerWorkflowTools(server: McpServer, conn: ExtensionConnecti
     return { workflows };
   });
 
-  defineTool(server, conn, 'workflow.add_element', {
-    description: 'Save a user-marked element to website-manuals pages/. When the user picks an element from the popup and tells you what it is, use this tool to save the element info (selector, description) to the corresponding site page file. Also rebuilds the comprehensive manual automatically.',
+  defineTool(server, conn, 'workflow_add_element', {
+    description: 'Save a user-marked element to website-manuals pages/. When the user picks an element from the popup and tells you what it is, save the element info (selector, description) to the corresponding site page file. Also rebuilds the comprehensive manual automatically. Parameters: site (required, string), pageName (required, string), elementName (required, string), description (required, string), selector (required, string), type (optional, click|type|select, default click). Returns: confirmation with path.',
     inputSchema: z.object({
       site: z.string().describe('Site directory name'),
       pageName: z.string().describe('Page name, e.g. "homepage", "videoPage"'),
@@ -118,8 +118,8 @@ export function registerWorkflowTools(server: McpServer, conn: ExtensionConnecti
     return { success: true, path: `${safeSite}/pages/${pageName}.json` };
   });
 
-  defineTool(server, conn, 'workflow.list_elements', {
-    description: 'List elements the user has marked via the extension popup. The user clicks "Pick" in the popup, selects an element on the page, and describes its purpose. The agent reviews these to understand page elements.',
+  defineTool(server, conn, 'workflow_list_elements', {
+    description: 'List elements the user has marked via the extension popup. The user clicks "Pick" in the popup, selects an element on the page, and describes its purpose. The agent reviews these to understand page elements. Parameters: none. Returns: array of elements with name, description, selector, site, pickedAt.',
     inputSchema: z.object({}),
   }, async () => {
     const dir = path.resolve('picked-elements');
@@ -138,8 +138,8 @@ export function registerWorkflowTools(server: McpServer, conn: ExtensionConnecti
     } catch { return { elements: [] }; }
   });
 
-  defineTool(server, conn, 'workflow.get_element', {
-    description: 'Get details of a user-marked element, including selector, description, HTML snippet, and more.',
+  defineTool(server, conn, 'workflow_get_element', {
+    description: 'Get details of a user-marked element, including selector, description, HTML snippet, and more. Parameters: name (required, string, from list_elements). Returns: element details object.',
     inputSchema: z.object({
       name: z.string().describe('Element name from workflow.list_elements'),
     }),

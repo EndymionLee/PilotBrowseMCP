@@ -144,7 +144,7 @@ get_html / get_text 全量源码获取是**最后一招**，不是首选！
 正确流程：
 
 ```
-1. browser.get_markdown / get_text / get_html 直接获取页面内容
+1. browser_get_markdown / get_text / get_html 直接获取页面内容
 2. 用 workflow.save_file 或 tools/files 系列工具直接写入磁盘文件
 3. LLM 只负责判断"爬什么、存哪里"，不接触原文内容
 ```
@@ -203,46 +203,43 @@ for i, cid in enumerate(ids):
 
 ## 网络请求监听（API 优先策略）
 
-SPA 页面（React/Vue）的数据通过 XHR/Fetch 加载，HTML 里只有空壳。从 DOM 里抠数据不如直接拿 API 响应。配合三个网络工具使用：
+SPA 页面（React/Vue）的数据通过 XHR/Fetch 加载，HTML 里只有空壳。从 DOM 里抠数据不如直接拿 API 响应。配合以下工具使用：
 
-| 工具                      | 作用                                                                          |
-| ------------------------- | ----------------------------------------------------------------------------- |
-| `start_network_monitor` | 开启监听。操作页面之前先调这个，开始缓存请求                                  |
-| `network.search`        | 搜索缓存的请求。按 keyword / urlPattern / method / statusCode / mimeType 过滤 |
-| `network.replay`        | 重放请求。拿缓存的请求重新发一次，返回最新数据                                |
+| 工具                         | 作用                                                                         |
+| ---------------------------- | ---------------------------------------------------------------------------- |
+| `start_network_monitor`    | 开启监听，开始缓存请求                                                       |
+| `stop_network_monitor`     | 停止监听（缓存保留，可继续查看和重放）                                       |
+| `browser_network_clear_cache` | 清除缓存的请求（不停监听）                                                 |
+| `browser_network_search`           | 搜索缓存的请求。按 keyword / urlPattern / method / statusCode / mimeType / sort 过滤 |
+| `browser_network_detail`              | 获取请求完整详情（URL、Method、Headers、Request Body、Response Body、Status、Timing、Size）|
+| `browser_network_wait`             | 等待匹配的请求出现并完成，替代固定延时                                       |
+| `browser_network_replay`           | 重放请求，支持 overrides（改 query/headers/body）+ extract（JSON 路径提取）  |
+| `browser_network_export`           | 导出为 curl / fetch / Python / HAR 代码                                     |
+| `browser_network_analyze`          | 分析站点 API 结构，输出 API 目录、用途、数据流、replay 模板                  |
+| `browser_network_override`         | 设置响应覆盖规则（篡改 body/status/header）                                  |
 
 ### 使用时机
 
-| 场景                   | 做法                                | 省 token 效果                  |
-| ---------------------- | ----------------------------------- | ------------------------------ |
-| 搜索列表 / 商品 / 内容 | 监听 -> 搜 API -> 从 JSON 取数据    | DOM 解析的 1/5 甚至更少        |
-| 翻页 / 加载更多        | 找到 API -> replay 并改 offset/page | 不用点"下一页"等页面渲染       |
-| 商品详情 / 价格 / 库存 | 搜对应 API -> replay 拿最新值       | 一次请求比打开页面再解析快得多 |
+| 场景                     | 做法                                                        | 省 token / 提成功率效果 |
+| ------------------------ | ----------------------------------------------------------- | ----------------------- |
+| 搜索列表 / 商品 / 内容   | 监听 -> 搜 API -> 从 JSON 取数据                            | DOM 解析的 1/5 甚至更少 |
+| 翻页 / 加载更多          | 找到 API -> replay + overrides 改 page/offset               | 不用点"下一页"等渲染    |
+| 商品详情 / 价格 / 库存   | 搜对应 API -> replay 拿最新值                               | 一次请求 vs 整页加载    |
+| 等待某个请求完成         | click/type 后调 browser_network_wait 等具体 API 回来                | 替代固定延时，提升成功率 |
+| 了解站点 API 结构        | 探索完调 browser_network_analyze，生成 API 目录                     | 输出可存到 apis/        |
+| 调试/测试/绕过鉴权       | browser_network_override 设置响应覆盖规则                           | --                      |
 
-### 建议策略
-
-```
-操作页面之前：
-  先 start_network_monitor 开启监听
-
-操作页面之后：
-  先搜 network.search 看能不能找到所需数据的 API
-  └─ 能找到 → 从 JSON 提取数据（token 省，结构化好）
-  └─ 找不到 → 回退到 get_markdown / query / get_text
-
-拿到 API 请求 ID 后：
-  需要最新数据 → network.replay 重放一次
-  需要下一页 → 改参数后 replay
-```
-
-### 示例
+### 完整管线
 
 ```
-打开目标网站，先 start_network_monitor 监听，
-在搜索框搜关键词，
-搜完后调 network.search({ mimeType: "application/json", keyword: "list" })
-从返回的 JSON 里提取数据。
-想看下一页 → 找到对应 API 的 requestId，调 network.replay
+start_network_monitor → 操作页面 → browser_network_search
+                                   │
+                                   ├→ browser_network_detail → 查看详情
+                                   │     ├→ browser_network_replay → 重放（支持 overrides + extract）
+                                   │     ├→ browser_network_export → 导出代码
+                                   │     └→ browser_network_analyze → 分析 API 结构
+                                   │
+                                   └→ browser_network_wait → 等某个请求完成再继续
 ```
 
 > 优先找 API，其次 DOM。网络监听在 SPA 页面上效果最好（大部分数据走 API），
@@ -255,13 +252,13 @@ SPA 页面（React/Vue）的数据通过 XHR/Fetch 加载，HTML 里只有空壳
 ### 第〇步：准备
 
 ```javascript
-const tabs = await mcp({tool:"browser_mcp_browser.list_tabs"})
+const tabs = await mcp({tool:"browser_mcp_browser_list_tabs"})
 const tab = tabs.find(t => t.active)
 const TAB_ID = tab.id
 const BASE_URL = tab.url
 
 // 开启网络监听，后续操作会缓存所有 XHR/Fetch 请求
-await mcp({tool:"browser_mcp_browser.start_network_monitor", args:{tabId: TAB_ID}})
+await mcp({tool:"browser_mcp_browser_start_network_monitor", args:{tabId: TAB_ID}})
 ```
 
 ### 第一步：轻量扫描（`lightScan`，首选方案）
@@ -270,13 +267,13 @@ await mcp({tool:"browser_mcp_browser.start_network_monitor", args:{tabId: TAB_ID
 
 ```javascript
 // ① 最轻量：获取当前页 URL 和标题
-const info = await mcp({tool:"browser_mcp_browser.current_page", args:{tabId: TAB_ID}})
+const info = await mcp({tool:"browser_mcp_browser_current_page", args:{tabId: TAB_ID}})
 
 // ② 轻量：获取页面结构摘要（h1/h2/h3/table/form/img）
-const structure = await mcp({tool:"browser_mcp_browser.inspect_page", args:{tabId: TAB_ID}})
+const structure = await mcp({tool:"browser_mcp_browser_inspect_page", args:{tabId: TAB_ID}})
 
 // ③ 轻量：扫描所有可交互元素（推荐：使用 query 精准查找，而非全量抓取）
-const interactives = await mcp({tool:"browser_mcp_browser.query", args:{
+const interactives = await mcp({tool:"browser_mcp_browser_query", args:{
   tabId: TAB_ID,
   selector: `
     input, textarea, [contenteditable], [role=textbox],
@@ -288,7 +285,7 @@ const interactives = await mcp({tool:"browser_mcp_browser.query", args:{
 }})
 
 // ④ 轻量：获取页面可读内容（推荐替代 get_html / get_text）
-const markdown = await mcp({tool:"browser_mcp_browser.get_markdown", args:{tabId: TAB_ID}})
+const markdown = await mcp({tool:"browser_mcp_browser_get_markdown", args:{tabId: TAB_ID}})
 // get_markdown 结构化好、token 省，优先使用
 // 需要更多纯文本数据时用 get_text（比 get_html 更轻）
 ```
@@ -301,20 +298,20 @@ const markdown = await mcp({tool:"browser_mcp_browser.get_markdown", args:{tabId
 
 ```javascript
 // 仅当轻量扫描不够时，才升级到 get_text
-const fullText = await mcp({tool:"browser_mcp_browser.get_text", args:{tabId: TAB_ID}})
+const fullText = await mcp({tool:"browser_mcp_browser_get_text", args:{tabId: TAB_ID}})
 
 // 注意 仅当 get_text 也不够（如需要查看确切 DOM 属性、data-* 属性值）时，
 // 才使用 get_html 作为最后的兜底方案
-const html = await mcp({tool:"browser_mcp_browser.get_html", args:{tabId: TAB_ID}})
+const html = await mcp({tool:"browser_mcp_browser_get_html", args:{tabId: TAB_ID}})
 
 // 扫描 Shadow DOM 容器
-const shadowHosts = await mcp({tool:"browser_mcp_browser.query", args:{
+const shadowHosts = await mcp({tool:"browser_mcp_browser_query", args:{
   tabId: TAB_ID,
   selector: 'bili-comments, ytd-comments, *[id*="shadow"], *[class*="shadow"]'
 }})
 
 // 扫描入口链接
-const entryLinks = await mcp({tool:"browser_mcp_browser.query", args:{
+const entryLinks = await mcp({tool:"browser_mcp_browser_query", args:{
   tabId: TAB_ID, selector: "a[href]"
 }})
 ```
@@ -365,8 +362,8 @@ async function exploreSubPage(tabId, parentPageKey, entrySelector, subPageKey, d
   })
 
   // 2. 点击进入
-  await mcp({tool:"browser_mcp_browser.click", args:{tabId, selector: entrySelector}})
-  await mcp({tool:"browser_mcp_browser.wait", args:{tabId, ms: 1500}})
+  await mcp({tool:"browser_mcp_browser_click", args:{tabId, selector: entrySelector}})
+  await mcp({tool:"browser_mcp_browser_wait", args:{tabId, ms: 1500}})
 
   // 3. 穿透式扫描子页面
   await pierceScan(tabId, subPageKey)
@@ -375,7 +372,7 @@ async function exploreSubPage(tabId, parentPageKey, entrySelector, subPageKey, d
   await testInputCapabilities(tabId, subPageKey)
 
   // 5. API 发现：搜索页面加载过程中产生的网络请求
-  const apis = await mcp({tool:"browser_mcp_browser.network.search", args:{
+  const apis = await mcp({tool:"browser_mcp_browser_network_search", args:{
     tabId,
     mimeType: "application/json",
     limit: 30
@@ -384,8 +381,7 @@ async function exploreSubPage(tabId, parentPageKey, entrySelector, subPageKey, d
     saveApis(tabId, subPageKey, apis.results)
   }
 
-  // 6. 返回
-  await mcp({tool:"browser_mcp_browser.go_back", args:{tabId}})
+  // 6. 返回上一页（如 via browser_activate 切换回首页标签页）
 }
 ```
 
@@ -599,7 +595,7 @@ async function exploreSubPage(tabId, parentPageKey, entrySelector, subPageKey, d
 | `response.fields`  | 响应中的关键字段                         |
 | `usedBy`           | 关联到 `workflows/` 中的工作流         |
 
-**执行规则：** 如果当前 workflow 有匹配的 API 定义，优先通过 `network.replay` 调 API 拿数据，不同步操作页面等待渲染。
+**执行规则：** 如果当前 workflow 有匹配的 API 定义，优先通过 `browser_network_replay` 调 API 拿数据，不同步操作页面等待渲染。
 
 #### 6. `capabilities.json` — 浏览器能力模型（自动生成）
 
@@ -622,7 +618,7 @@ async function exploreSubPage(tabId, parentPageKey, entrySelector, subPageKey, d
       "recommendedAction": "insertText",
       "recommendedMethod": "cdp",
       "knownIssues": [
-        "普通 browser.type() 触发 React onChange 失败",
+        "普通 browser_type() 触发 React onChange 失败",
         "需先 click 激活再 CDP Input.insertText"
       ]
     },

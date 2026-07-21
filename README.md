@@ -122,10 +122,10 @@ Browser
 
 ## Features
 
-- **40+ MCP tools** -- tab management, content extraction, DOM operations, network interception, file saving, workflow recording
+- **45 MCP tools** -- tab management, content extraction, DOM operations, network interception, file saving, workflow recording
 - **Element picker** -- click any element on the page and tell the agent what it is
 - **Workflow recording** -- demonstrate operations to the agent, it learns and reuses
-- **Network API discovery** -- intercept XHR/Fetch to find JSON APIs behind SPAs
+- **Network API toolkit** -- monitor, search, inspect, replay with overrides, export code, and analyze site API structure
 - **Token-efficient saving** -- save page content directly to disk, bypassing the LLM
 - **Shadow DOM + contenteditable**
 
@@ -133,42 +133,48 @@ Browser
 
 | Category | Tool | What it does |
 |----------|------|--------------|
-| **Page** | `browser.get_markdown` | Convert page to clean Markdown via Readability + Turndown |
-| | `browser.get_text` | Get plain text of the page (lighter than get_html) |
-| | `browser.get_html` | Get raw HTML of the page (heavy, last resort) |
-| | `browser.find` | Find element by visible text, aria-label, or role |
-| | `browser.current_page` | Get current tab URL and title |
-| | `browser.inspect_page` | See page structure (headings, sections, buttons) |
-| | `browser.query` | Query elements by CSS selector (penetrates Shadow DOM) |
-| | `browser.evaluate` | Execute JS in page context |
-| | `browser.extract_article` | Extract article metadata (title, author, date, body) |
-| | `browser.extract_table` | Extract HTML table as JSON array |
-| | `browser.extract_links` | Extract all links from the page |
-| | `browser.extract_images` | Extract image info (src, alt, size) |
-| **Actions** | `browser.click` | Click an element (composed:true for Shadow DOM) |
-| | `browser.type` | Type text into input or contenteditable |
-| | `browser.scroll` | Scroll the page |
-| | `browser.wait` | Wait for a given number of milliseconds |
-| | `browser.wait_for_element` | Wait for an element to appear |
-| **Saving** | `browser.save_content` | Auto-detect main content and save to file (zero LLM tokens) |
-| | `browser.save_xpath` | Extract by XPath and save to file |
-| **Network** | `browser.start_network_monitor` | Start intercepting requests |
-| | `browser.stop_network_monitor` | Stop monitoring and clear cached requests |
-| | `browser.network.search` | Search cached requests by keyword, method, status |
-| | `browser.network.replay` | Replay a cached request |
-| **Tabs** | `browser.list_tabs` | List all open tabs |
-| | `browser.open / close / activate` | Tab management |
-| **Recording** | `workflow.list_recordings` | View recordings from popup |
-| | `workflow.get_recording` | Get recording details |
-| | `workflow.list_elements` | View marked elements |
-| | `workflow.get_element` | Get marked element details |
-| | `workflow.list` | List processed workflows in website-manuals |
-| | `workflow.add_element` | Save a user-marked element to pages/ |
-| | `workflow.generate` | Save a processed workflow to website-manuals |
-| **Data** | `browser.cookies` | Read cookies (requires permission) |
-| | `browser.local_storage` | Read LocalStorage (requires permission) |
-| | `browser.screenshot` | Take screenshot (requires permission) |
-| | `browser.permissions.list / grant / revoke` | Permission management |
+| **Page** | `browser_get_markdown` | Convert page to clean Markdown via Readability + Turndown |
+| | `browser_get_text` | Get plain text of the page (lighter than get_html) |
+| | `browser_get_html` | Get raw HTML of the page (heavy, last resort) |
+| | `browser_find` | Find element by visible text, aria-label, or role |
+| | `browser_current_page` | Get current tab URL and title |
+| | `browser_inspect_page` | See page structure (headings, sections, buttons) |
+| | `browser_query` | Query elements by CSS selector (penetrates Shadow DOM) |
+| | `browser_evaluate` | Execute JS in page context |
+| | `browser_extract_article` | Extract article metadata (title, author, date, body) |
+| | `browser_extract_table` | Extract HTML table as JSON array |
+| | `browser_extract_links` | Extract all links from the page |
+| | `browser_extract_images` | Extract image info (src, alt, size) |
+| **Actions** | `browser_click` | Click an element (composed:true for Shadow DOM) |
+| | `browser_type` | Type text into input or contenteditable |
+| | `browser_scroll` | Scroll the page |
+| | `browser_wait` | Wait for a given number of milliseconds |
+| | `browser_wait_for_element` | Wait for an element to appear |
+| **Saving** | `browser_save_content` | Auto-detect main content and save to file (zero LLM tokens) |
+| | `browser_save_xpath` | Extract by XPath and save to file |
+| **Network** | `browser_start_network_monitor` | Start intercepting requests |
+| | `browser_stop_network_monitor` | Stop monitoring (cache preserved for replay) |
+| | `browser_network_clear_cache` | Clear cached requests without stopping monitoring |
+| | `browser_network_search` | Search cached requests by keyword, method, status |
+| | `browser_network_detail` | Get full details of a cached request (headers, body, timing) |
+| | `browser_network_wait` | Wait for a matching request after an action (replaces fixed delay) |
+| | `browser_network_replay` | Replay with overrides (query/headers/body) + extract JSON path |
+| | `browser_network_export` | Export request as curl / fetch / Python / HAR |
+| | `browser_network_analyze` | Analyze API structure of a site from cached requests |
+| | `browser_network_override` | Set response override rules (body, status, headers) |
+| **Tabs** | `browser_list_tabs` | List all open tabs |
+| | `browser_open / close / activate` | Tab management |
+| **Recording** | `workflow_list_recordings` | View recordings from popup |
+| | `workflow_get_recording` | Get recording details |
+| | `workflow_list_elements` | View marked elements |
+| | `workflow_get_element` | Get marked element details |
+| | `workflow_list` | List processed workflows in website-manuals |
+| | `workflow_add_element` | Save a user-marked element to pages/ |
+| | `workflow_generate` | Save a processed workflow to website-manuals |
+| **Data** | `browser_cookies` | Read cookies (requires permission) |
+| | `browser_local_storage` | Read LocalStorage (requires permission) |
+| | `browser_screenshot` | Take screenshot (requires permission) |
+| | `browser_permissions_list / grant / revoke` | Permission management |
 
 ---
 
