@@ -1,5 +1,9 @@
 # Project Instructions
 
+## Browser First
+
+"this site" → check `browser_mcp_browser_list_tabs`, not project files. No tabs → ask.
+
 ## Manual First
 
 **Before operating a known website, check `website-manuals/<site>/` for an existing manual.**

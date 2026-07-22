@@ -1,24 +1,47 @@
-# 5. Capability Evolution Phase
+# 5.Skill Evolution Process
 
-Goal: Each execution improves the capability.
+After task completion, review the execution trace and decide whether the Skill needs improvement.
 
-## Evolution Loop
+## 1. Identify Improvement
 
-```
-First visit:          browser workflow only (learn how to do it)
-After API discovery:  API added as primary, workflow kept as fallback
-After refinement:     Parameters documented, error handling added
-After site changes:   API breaks -> fallback to workflow -> re-discover
-```
+Find:
 
-## When to Trigger Evolution
+- Missing instructions
+- Inefficient steps
+- Repeated failures
+- New successful strategies
 
-| Signal | Action |
-|--------|--------|
-| New API found during execution | Add to capability as primary |
-| API returns 401/403 | Log auth as precondition |
-| Browser workflow fails | Mark as stale, re-explore |
-| Multiple similar APIs | Merge into parameterized capability |
-| GraphQL endpoint found | Replace multiple REST calls with one query |
+## 2. Generate Patch
 
-Each execution makes the capability more robust and token-efficient.
+Do not rewrite the whole Skill.
+
+Generate a small patch:
+
+- Add new rule
+- Modify existing instruction
+- Remove outdated guidance
+- Add new example
+
+## 3. Apply Update
+
+Update the Skill file with the patch.
+
+Example:
+
+Before:
+
+"Use API when possible."
+
+After:
+
+"Use API when possible. For SPA websites, inspect network requests before parsing DOM."
+
+## 4. Verify
+
+Run similar tasks to check:
+
+- Did success rate improve?
+- Did execution become shorter?
+- Did token usage decrease?
+
+Keep the change only if it improves performance.

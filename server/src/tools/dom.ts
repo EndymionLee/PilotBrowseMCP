@@ -76,7 +76,7 @@ export function registerDomTools(server: McpServer, conn: ExtensionConnection): 
   });
 
   defineTool(server, conn, 'browser_cookies', {
-    description: 'Read cookies for the current domain. Specify a tab ID to auto-detect the domain, or provide a domain directly. Returns name, value, domain, path, secure, httpOnly, sameSite for each cookie. Requires cookie permission. HttpOnly cookies are not accessible. Parameters: tabId (optional, number), domain (optional, string). Returns: array of cookies.',
+    description: 'Read cookies for the current domain. Specify a tab ID to auto-detect the domain, or provide a domain directly. Returns name, value, domain, path, secure, httpOnly, sameSite for each cookie. Requires cookie permission. Can read HttpOnly cookies (Chrome Extension API has full access, unlike document.cookie). Parameters: tabId (optional, number), domain (optional, string). Returns: array of cookies.',
     inputSchema: z.object({
       tabId: z.number().optional().describe('Tab ID to auto-detect domain'),
       domain: z.string().optional().describe('Explicit domain, e.g. ".example.com"'),
