@@ -2,38 +2,36 @@
 
 [English](README.md)
 
-**让Agent自主探索网站，还可以人工教agent如何操作网站。Pilot Browse MCP 将网站交互转化为复用手册，让未来任务执行更快、更低成本。**
+**通过用户行为发现网站 API 和能力，沉淀为可复用的能力模型。**
 
 ---
 
 ## 展示 (Pi演示)
 
-### Agent自主探索
+### 能力学习
 
-安装skill，让agent探索一个网站，探索完成后，生成对应操作手册。（可以分享手册给别人）
+安装 skill，agent 在操作网站的过程中自动发现 API，将 API 和操作流程绑定为可复用的能力。
 
 ![标记元素](assets/Image/EpWeb.gif)
 
-探索完，在 website-manuals 文件夹下生成对应网站手册
+学习成果保存在 `website-manuals/` 目录下：
 
 ```
 website-manuals/<site>/
-├── README.md              # ← 手册概览（先读此文件！）
-├── meta.json              # 站点信息 + 页面地图 + API 映射
-├── pages/                 # 每个页面一个 JSON（升级版交互模型）
-├── navigation/            # 导航路径
-├── workflows/             # 操作流程（含降级策略）
-├── apis/                  # API 定义（匹配到 workflow）
-└── capabilities.json      # 浏览器能力模型（自动生成）
+  README.md              # 根索引
+  pages/                 # 页面交互模型
+  navigation/            # 导航路径
+  workflows/
+    README.md            # 流程索引
+    flows/               # workflow JSON
+  apis/
+    README.md            # API 索引（先读）
+    endpoints/           # API JSON
 ```
 
-### 人工指导
+### 人工辅助
 
-探索中遇到困难，可以让agent启动抓包，人工操作完，告诉agent。或者人工手动 录制/标记，帮助agent探索。
-
-#### 抓包（你懂的）
-
-
+遇到复杂交互时，用户可以录制操作或标记元素，帮助 agent 学习。
 
 #### 标记元素
 
@@ -43,9 +41,9 @@ website-manuals/<site>/
 
 <img src="assets/Image/RecordWorkflow.gif" alt="标记元素"  />
 
-### 手册经验复用
+### 能力复用
 
-给出需求，agent会先查看有没有对应手册，找到相关手册后，agent会基于手册来操作页面，减少token量消耗，且提高执行效率。
+后续同类任务直接调 API（快速）或走浏览器流程（兜底），省 token 且更稳定。
 
 ### 样例
 

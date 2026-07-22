@@ -2,34 +2,36 @@
 
 [中文](README.zh-CN.md)
 
-**Show your agent how to use websites, or let it explore autonomously. Pilot Browse MCP turns website interactions into reusable manuals, making future tasks faster and cheaper.**
+**Discover website capabilities through user behaviors. APIs and automation workflows are both implementations of the same capability.**
 
 ---
 
 ## Showcase (Pi Demo)
 
-### Agent Autonomy
+### Capability Learning
 
-Install a skill, let the agent explore a website. When done, it generates an operation manual. You can share manuals with others.
+Install a skill. As the agent interacts with a website, it automatically discovers APIs and binds them with browser workflows into reusable capabilities.
 
 ![Agent Explore](assets/Image/EpWeb.gif)
 
-After exploration, the manual is saved in `website-manuals/`:
+Learning output is saved in `website-manuals/`:
 
 ```
 website-manuals/<site>/
-├── README.md              # Manual overview (read this first!)
-├── meta.json              # Site info + page map + API map
-├── pages/                 # Page interaction models (JSON)
-├── navigation/            # Navigation paths
-├── workflows/             # Operation workflows (with fallback)
-├── apis/                  # API definitions (mapped to workflows)
-└── capabilities.json      # Browser capability model
+  README.md              # Root index
+  pages/                 # Page interaction models
+  navigation/            # Navigation paths
+  workflows/
+    README.md            # Workflow index
+    flows/               # Workflow JSON files
+  apis/
+    README.md            # API index (browse first)
+    endpoints/           # API JSON files
 ```
 
 ### Guided Teaching
 
-Stuck on exploration? Record or mark elements manually to help the agent through.
+Stuck on complex interactions? Record or mark elements manually to help the agent learn.
 
 #### Mark Element
 
@@ -46,6 +48,8 @@ Given a task, the agent checks for existing manuals. If found, it operates based
 ### Demos
 
 Build various workflows, simple demo showcase.
+
+#### API Check-in Capture
 
 #### YouTube Like & Comment
 
