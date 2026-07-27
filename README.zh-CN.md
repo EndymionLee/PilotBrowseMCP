@@ -2,7 +2,7 @@
 
 [English](README.md)
 
-**浏览器的 MCP 工具集 + 网站能力学习器。Agent 自主探索网站、发现 API、学习操作流程，沉淀为可复用的网站手册。手册让后续 Agent 任务更省 token；还可生成两种完全不需要 LLM 的可执行脚本：调用脚本（导出为 curl/fetch/Python 等，直连接口批量拉取）；MCP 自动化脚本在浏览器中按步骤执行操作。**
+**浏览器的 MCP 工具集 + 网站能力学习器。Agent 自主探索网站，生成理解手册。**
 
 ---
 
@@ -24,7 +24,7 @@ website-manuals/<site>/
   workflows/
     README.md            # 流程索引
     flows/               # workflow JSON
-    scripts/             # MCP 自动化脚本（弹窗运行，无 LLM）
+    scripts/             # PAB 自动化脚本（.pab 文件）
   apis/
     README.md            # API 索引（先读）
     endpoints/           # API JSON
@@ -32,7 +32,9 @@ website-manuals/<site>/
 
 ### 人工辅助
 
-遇到复杂交互时，用户可以录制操作或标记元素，帮助 agent 学习。
+（Bilibili作为演示网站）
+
+遇到复杂交互时，可以录制操作或标记元素，帮助 agent 学习。
 
 #### 标记元素
 
@@ -44,27 +46,43 @@ website-manuals/<site>/
 
 ### 能力复用
 
-后续同类任务直接调 API（快速）或走浏览器流程（兜底），省 token 且更稳定。
+基于探索的手册，agent能够快速理解网站，快速完成任务
+
+还支持脱离llm两种方式：
+
+    生成.pab脚本，主要完成自动化任务，能力和agent 的mcp工具一致
+    
+    生成python等脚本，完成一些特殊任务
 
 ### 样例
 
 构建各种工作流，简单样例展示。
 
-#### 抓包提取签到api
+#### 自动化操作
 
-#### YouTube 视频点赞
-
-搜索关键字，找到视频，然后点赞和评论。
-
-<video src="https://github.com/user-attachments/assets/129c69f7-21a7-4fbe-93ae-6b0205450933" controls width="100%" style="max-width:720px;"></video>
-
-#### 起点小说保存
+##### Agent操作网站：起点小说保存
 
 搜索小说名，找到小说，爬取前5章节。
 
 <video src="https://github.com/user-attachments/assets/b244db3b-fb98-433c-b6ed-d8a74c75e802" controls width="100%" style="max-width:720px;"></video>
 
 ---
+
+##### .pab脚本：Bilibili打开三个热门视频并且留言
+
+<img src="assets/Image/BilibiliScript.gif" alt="Bilibili打开三个热门视频并且留言标记元素"  />
+
+---
+
+#### 生成Python脚本
+
+基于探索手册，生成各种脚本
+
+例如 小说爬虫脚本
+
+我使用Pilot分析小说网站，小说结构，章节获取api，生成爬虫脚本，做成docker镜像，生成9个爬虫docker容器，放nas上跑，跑了两天，爬了4000多本小说。
+
+![PaImage](assets\Image\PaImage.png)
 
 ## 安装
 
@@ -130,7 +148,7 @@ Browser
 ## 特性
 
 - **49 个 MCP 工具** -- 标签页管理、内容提取、DOM 操作、网络拦截、文件保存、录制、脚本自动化
-- **脚本执行** -- 预录的工具序列可在弹窗或 Agent 中直接运行，不需要 LLM。适合每日签到、批量操作
+- **PAB 脚本** -- 类 Python 的浏览器自动化 DSL，支持 if/for/fn 控制流。弹窗直接运行，不需要 LLM
 - **元素拾取** -- 点页面上任意元素，告诉 Agent 这是什么
 - **录制工作流** -- 演示一遍，Agent 学会并复用
 - **网络 API 工具集** -- 监听、搜索、详情、重放(含 overrides + extract)、导出代码、站点 API 结构分析
@@ -179,8 +197,8 @@ Browser
 |                  | `workflow_list`                             | 列出已生成的 workflow                     |
 |                  | `workflow_add_element`                      | 保存用户标记的元素到 pages/               |
 |                  | `workflow_generate`                         | 生成 workflow                             |
-|                  | `workflow_generate_script`                  | 生成 MCP 自动化脚本                        |
-|                  | `workflow_execute_script`                   | 执行 MCP 自动化脚本                        |
+|                  | `workflow_generate_script`                  | 生成 MCP 自动化脚本                       |
+|                  | `workflow_execute_script`                   | 执行 MCP 自动化脚本                       |
 | **数据**   | `browser_cookies`                           | 读取 Cookie（需授权）                     |
 |                  | `browser_local_storage`                     | 读取 LocalStorage（需授权）               |
 |                  | `browser_screenshot`                        | 截图（需授权）                            |

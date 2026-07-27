@@ -14,6 +14,9 @@ import { registerScreenshotHandlers } from './handlers/screenshot.js';
 import { registerPermissionHandlers } from './handlers/permissions.js';
 import { permissionStore, PermissionStore } from './permissions.js';
 import { startRec, stopRec, isRecording, resetRec, reInject } from './handlers/recorder.js';
+import { Lexer } from '../pab/lexer.js';
+import { Parser } from '../pab/parser.js';
+import { Interpreter } from '../pab/interpreter.js';
 
 let currentRecTabId = 0;
 let recTabs = new Set<number>();
@@ -29,6 +32,35 @@ const router = new Router();
 registerTabHandlers(router);
 registerContentHandlers(router);
 registerDomHandlers(router);
+
+// PAB 执行（WebSocket 路径，供 Server 调用）
+router.register('pab_run', async (params, respond) => {
+  const pabCode = (params as any).code as string;
+  if (!pabCode) { respond(undefined, { code: -1, message: 'code is required' }); return; }
+  try {
+    const tokens = new Lexer(pabCode).tokenize();
+    const ast = new Parser(tokens).parse();
+    const ctx = new Interpreter(router);
+    await ctx.run(ast);
+    const logs = ctx.getLogs();
+    const ok = logs.filter(l => l.type !== 'error').length;
+    const fail = logs.filter(l => l.type === 'error').length;
+    scriptResults = { ok, fail, total: logs.length, details: logs };
+    chrome.storage.local.set({ lastScriptResult: scriptResults }).catch(() => {});
+    chrome.action.setBadgeText({ text: fail > 0 ? `${fail}F` : 'OK' });
+    chrome.action.setBadgeBackgroundColor({ color: fail > 0 ? '#FF3B30' : '#30B94E' });
+    setTimeout(() => { chrome.action.setBadgeText({ text: '' }); }, 8000);
+    respond({ success: true, ok, fail, total: logs.length, details: logs });
+  } catch (err) {
+    const msg = (err as Error).message;
+    scriptResults = { ok: 0, fail: 1, total: 1, details: [{ step: 0, type: 'error', error: msg, timestamp: Date.now() }] };
+    chrome.storage.local.set({ lastScriptResult: scriptResults }).catch(() => {});
+    chrome.action.setBadgeText({ text: 'ERR' });
+    chrome.action.setBadgeBackgroundColor({ color: '#FF3B30' });
+    setTimeout(() => { chrome.action.setBadgeText({ text: '' }); }, 8000);
+    respond(undefined, { code: -1, message: msg });
+  }
+});
 registerNetworkHandlers(router, wsClient);
 registerCookieHandlers(router);
 registerScreenshotHandlers(router);
@@ -410,8 +442,13 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
     }
     // 查询脚本状态（popup 打开时调用）
     case 'script_status': {
-      const lastResult = scriptResults;
-      sendResponse(lastResult);
+      if (scriptResults) { sendResponse(scriptResults); return true; }
+      chrome.storage.local.get('lastScriptResult').then((r) => {
+        const result = r.lastScriptResult || null;
+        // 取出后清掉 storage，下次弹窗不会再显示旧结果
+        if (result) chrome.storage.local.remove('lastScriptResult').catch(() => {});
+        sendResponse(result);
+      });
       return true;
     }
 
@@ -421,10 +458,61 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
       sendResponse({ success: true });
       return true;
     }
+
+
+    // PAB 脚本执行
+    case 'pab_run': {
+      const pabCode = msg.code as string;
+      const inputs = msg.inputs || {};
+      if (pabAbortController) { pabAbortController.abort(); }
+      pabAbortController = new AbortController();
+      const signal = pabAbortController.signal;
+      (async () => {
+        try {
+          chrome.action.setBadgeText({ text: 'RUN' });
+          chrome.action.setBadgeBackgroundColor({ color: '#FF9800' });
+          const tokens = new Lexer(pabCode).tokenize();
+          const ast = new Parser(tokens).parse();
+          const ctx = new Interpreter(router, inputs, pabAbortController!);
+          const result = await ctx.run(ast);
+          if (signal.aborted) { sendResponse({ stopped: true }); return; }
+          const logs = ctx.getLogs();
+          const ok = logs.filter(l => l.type !== 'error').length;
+          const fail = logs.filter(l => l.type === 'error').length;
+          scriptResults = { ok, fail, total: logs.length, details: logs };
+          chrome.storage.local.set({ lastScriptResult: scriptResults }).catch(() => {});
+          chrome.action.setBadgeText({ text: fail > 0 ? `${fail}F` : 'OK' });
+          chrome.action.setBadgeBackgroundColor({ color: fail > 0 ? '#FF3B30' : '#30B94E' });
+          setTimeout(() => { chrome.action.setBadgeText({ text: '' }); }, 8000);
+          sendResponse({ success: true, ok, fail, total: logs.length, details: logs });
+        } catch (err) {
+          const msg = (err as Error).message;
+          if (signal.aborted) { sendResponse({ stopped: true }); return; }
+          console.error('[PAB]', msg);
+          scriptResults = { ok: 0, fail: 1, total: 1, details: [{ step: 0, type: 'error', error: msg, timestamp: Date.now() }] };
+          chrome.storage.local.set({ lastScriptResult: scriptResults }).catch(() => {});
+          chrome.action.setBadgeText({ text: 'ERR' });
+          chrome.action.setBadgeBackgroundColor({ color: '#FF3B30' });
+          setTimeout(() => { chrome.action.setBadgeText({ text: '' }); }, 8000);
+          sendResponse({ error: msg });
+        }
+      })();
+      return true;
+    }
+
+    // PAB 停止
+    case 'pab_stop': {
+      if (pabAbortController) { pabAbortController.abort(); pabAbortController = null; }
+      chrome.action.setBadgeText({ text: 'STOP' });
+      chrome.action.setBadgeBackgroundColor({ color: '#FF9800' });
+      sendResponse({ success: true });
+      return true;
+    }
   }
 });
 
 let scriptResults: { ok: number; fail: number; total: number; details?: any[] } | null = null;
+let pabAbortController: AbortController | null = null;
 
 // ---- 缓冲发送（Server 离线时暂存，连上后自动发）----
 const PENDING_KEY = 'pending_events';

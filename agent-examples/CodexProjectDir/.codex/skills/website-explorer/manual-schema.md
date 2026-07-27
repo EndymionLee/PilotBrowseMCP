@@ -172,24 +172,22 @@ Before saving any file, validate against the schemas below. Use `workflow_valida
 
 ---
 
-## workflows/scripts/{name}.json
+## workflows/scripts/{name}.pab
 
 **Template:**
 
-```json
-{
-  "name": "{script name}",
-  "steps": [
-    { "method": "browser_open", "params": { "url": "{url}" } },
-    { "method": "browser_wait", "params": { "ms": 2000 } },
-    { "method": "browser_click", "params": { "selector": "{css selector}" } }
-  ]
-}
+```python
+# {description}
+browser_open(url="{url}")
+browser_wait(ms=2000)
+browser_click(selector="{css selector}")
 ```
 
-**Schema validation:**
-- Each step `method` must be a valid MCP tool name (browser_xxx or browser_network_xxx)
-- MCP script is for direct Extension execution, not LLM interpretation
+**Rules:**
+- Tool names are the same as MCP tools (`browser_open`, `browser_click`, etc.)
+- Supports: variables, if/for/while, fn, retry, input
+- One tool call per line
+- String values use double quotes
 
 ---
 

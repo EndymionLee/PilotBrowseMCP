@@ -8,8 +8,8 @@ export const config = {
   /** WebSocket 连接超时 (ms) */
   wsConnectionTimeout: parseInt(process.env.BROWSER_MCP_WS_TIMEOUT ?? '', 10) || 60000,
 
-  /** 请求超时 (ms) */
-  requestTimeout: parseInt(process.env.BROWSER_MCP_REQ_TIMEOUT ?? '', 10) || 30000,
+  /** 请求超时 (ms) PAB 脚本可能跑几分钟，默认设 10 分钟 */
+  requestTimeout: parseInt(process.env.BROWSER_MCP_REQ_TIMEOUT ?? '', 10) || 600000,
 
   /** 调试模式 */
   debug: process.env.BROWSER_MCP_DEBUG === 'true',

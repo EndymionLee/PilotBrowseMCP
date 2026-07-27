@@ -50,43 +50,110 @@ Scripts are pre-recorded MCP tool call sequences stored in `workflows/scripts/`.
 - Operations where LLM judgment adds no value
 - After the Agent has discovered the correct steps and selectors
 
-### Script Generation
+### Script Generation (PAB)
 
 When the user says "做成脚本" or "make this a script":
 
-1. Check `website-manuals/<site>/` for existing manual data
-2. Read `apis/README.md` and `apis/endpoints/<name>.json` for API calls
-3. Read `pages/<page>.json` for element selectors
-4. Combine them into an MCP script
-5. Call `workflow_generate_script` to save
+1. Check `website-manuals/<site>/` for manual data
+2. Read `apis/` for API calls, `pages/` for selectors, `workflows/` for steps
+3. Generate a `.pab` file with control flow where needed
+4. Save it to `workflows/scripts/<name>.pab`
 
-**Principles:**
+**PAB syntax quick reference:**
 
-- Use `browser_network_replay` for API calls (from `apis/endpoints/`)
-- Use `browser_click/type` for DOM operations (selectors from `pages/`)
-- Use `browser_wait` between operations when timing matters
-- The script runs without LLM, so every step must have concrete parameters
+Tool names and parameters are the same as the MCP tools you already use. Just write them directly.
 
-**Example - converting manual data to script:**
+```python
+# Comment
+name: str = "script"       # Variable with type (optional)
+count: int = 5
+items: list = ["a", "b"]   # List literal
+data: dict = {"key": val}  # Dict literal (for overrides, headers)
+ok: bool = true
+
+browser_open(url)          # Tool call, same as MCP
+browser_click(selector)    # Same params as browser_click MCP tool
+result = browser_evaluate(code="document.title")  # Return value
+
+if result:                 # Condition
+    browser_screenshot()
+
+if not ok:                 # Not operator
+    browser_quit()
+
+if "video" in text:        # In operator (string contains)
+    browser_click(".btn")
+
+for i in range(5):         # Loop
+    browser_wait(1000)
+
+while page < 10:            # While loop
+    page = page + 1
+
+fn my_func():               # Function
+    browser_click(".btn")
+
+my_func()                   # Function call
+```
+
+**PAB vs MCP:** No mapping needed. All MCP tools (49) work in PAB with the same names. Examples:
+
+```python
+# Page tools
+result = browser_evaluate("document.title")
+links = browser_extract_links()
+h1 = browser_query("h1")
+text = browser_get_text()
+
+# Actions
+browser_click(".btn")
+browser_type("#input", "text")
+browser_scroll(direction="down", amount=300)
+browser_find(text="Submit", tag="button")
+
+# Network
+browser_start_network_monitor()
+data = browser_network_search(keyword="api", mimeType="application/json")
+browser_network_wait("/api/submit", method="POST", timeout=10000)
+
+# Tabs
+tabs = browser_list_tabs()
+browser_close()
+browser_activate()
+
+# Data
+cookies = browser_cookies()
+browser_screenshot()
+```
+
+**Mapping workflow to PAB:**
+
+| Workflow step | PAB |
+|--------------|-----|
+| `click` | `browser_click(selector)` |
+| `type` | `browser_type(selector, text)` |
+| `navigate` | `browser_open(url)` |
+| Wait for API | `browser_start_network_monitor()` before, then `browser_network_wait(urlPattern)` |
+
+**Example - manual data to PAB:**
 
 From the manual:
 ```
 apis/endpoints/search.json:  GET /api/search?keyword=
 pages/homepage.json:          searchInput (#search), searchButton (.search-btn)
-workflows/flows/search.json:  click searchInput, type keyword, click searchButton
 ```
 
-Generated script:
-```json
-steps: [
-  { "method": "browser_click", "params": { "selector": "#search" } },
-  { "method": "browser_type", "params": { "selector": "#search", "text": "___keyword___" } },
-  { "method": "browser_click", "params": { "selector": ".search-btn" } },
-  { "method": "browser_network_replay", "params": { "requestId": null, "overrides": { "query": { "q": "___keyword___" } } } }
-]
+Generated PAB:
+```python
+input keyword
+browser_open("https://examplesite.com")
+browser_wait(2000)
+browser_type("#search", keyword)
+browser_click(".search-btn")
+result = browser_network_wait("/api/search", method="GET")
 ```
 
-Save with `workflow_generate_script`:
+Save the file as `workflows/scripts/<name>.pab`. The user loads it from the Extension popup and runs it.
 
 ```json
 workflow_generate_script({

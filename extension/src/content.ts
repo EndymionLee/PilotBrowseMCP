@@ -704,7 +704,7 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
         break;
       }
 
-      // 执行 JS（供 Agent 处理复杂场景）
+      // 执行 JS（通过 script 标签注入，绕过页面 CSP）
       case 'evaluate': {
         const code = params.code as string;
         if (!code) { sendResponse({ error: 'code 不能为空' }); break; }
@@ -712,7 +712,29 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
           const result = eval(code);
           sendResponse({ result: result ?? null });
         } catch (err) {
-          sendResponse({ error: (err as Error).message });
+          // eval 被 CSP 拦截时，改用 script 标签注入
+          try {
+            const id = '__mcp_eval_' + Date.now();
+            const script = document.createElement('script');
+            script.textContent = `
+              var __mcp_r = (function(){ return ${code} })();
+              var __mcp_el = document.getElementById('${id}');
+              if(__mcp_el) __mcp_el.dataset.result = JSON.stringify(__mcp_r);
+            `;
+            document.body.appendChild(script);
+            setTimeout(() => {
+              const resultEl = document.getElementById(id);
+              if (resultEl) {
+                const raw = resultEl.dataset.result;
+                if (raw) { sendResponse({ result: JSON.parse(raw) }); resultEl.remove(); }
+                else { sendResponse({ error: 'Script returned no result' }); }
+              } else {
+                sendResponse({ error: 'Script element not found' });
+              }
+            }, 100);
+          } catch (e2) {
+            sendResponse({ error: (e2 as Error).message });
+          }
         }
         break;
       }

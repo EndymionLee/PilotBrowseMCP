@@ -5,14 +5,23 @@ import { defineTool } from '../lib/tool-factory.js';
 
 export function registerDomTools(server: McpServer, conn: ExtensionConnection): void {
   defineTool(server, conn, 'browser_query', {
-    description: 'Query page elements by CSS selector. Returns tag, id, class, text, attributes, and bounding box for each match. Use to inspect page structure and find element selectors. Parameters: tabId (required, number), selector (required, string). Returns: array of element objects with tag, id, class, text, attributes, bounds.',
+    description: 'Query page elements by CSS selector. Returns tag, id, class, text, attributes, and bounding box for each match. Use to inspect page structure and find element selectors. Supports standard CSS selectors only (not Playwright-specific ones like :has-text()). Parameters: tabId (required, number), selector (required, string). Returns: array of element objects with tag, id, class, text, attributes, bounds.',
     inputSchema: z.object({
       tabId: z.number().describe('Tab ID from browser.list_tabs'),
       selector: z.string().describe('CSS selector, e.g. "div.main-content a", ".class-name", "#id"'),
     }),
   }, async (args) => {
-    const r = await conn.sendRequest<{ elements: unknown[] }>('query_dom', args);
-    return r.elements;
+    try {
+      const r = await conn.sendRequest<{ elements: unknown[] }>('query_dom', args);
+      return r.elements;
+    } catch (err) {
+      const msg = (err as Error).message;
+      // 将常见的无效选择器错误转为友好提示
+      if (msg.includes('not a valid selector') || msg.includes('SyntaxError')) {
+        return `Invalid CSS selector: "${args.selector}". Standard CSS selectors only (e.g. ".class", "#id", "tag", "div > p"). Playwright-specific selectors like :has-text() are not supported.`;
+      }
+      throw err;
+    }
   });
 
   defineTool(server, conn, 'browser_click', {
@@ -106,7 +115,8 @@ export function registerDomTools(server: McpServer, conn: ExtensionConnection): 
   }, async (args) => {
     const { tabId, code } = args as any;
     if (!code) throw new Error('code is required');
-    const result = await conn.sendRequest<{ result?: any; error?: string }>('evaluate', { tabId, code });
+    const result = await conn.sendRequest<any>('evaluate', { tabId, code });
+    if (!result) throw new Error('evaluate returned no response (content script may not be loaded)');
     if (result.error) throw new Error(result.error);
     return { result: result.result };
   });

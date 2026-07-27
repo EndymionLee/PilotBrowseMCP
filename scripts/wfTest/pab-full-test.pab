@@ -1,0 +1,54 @@
+# PAB 全面测试
+# 测试：变量、工具、条件、循环、函数、属性访问
+
+# === 变量 ===
+name = "pab full test"
+page = 1
+max_pages = 3
+count = 0
+
+# === 工具调用 ===
+browser_open("https://example.com")
+browser_wait(2000)
+
+title = browser_evaluate("document.title")
+links = browser_extract_links()
+h1 = browser_query("h1")
+
+# === if/elif/else ===
+if title:
+    print("title: " + title)
+
+if links:
+    print("links: " + str(len(links)))
+else:
+    print("no links")
+
+# === for 循环 ===
+print("for loop " + str(max_pages) + " times")
+for i in range(max_pages):
+    print("step " + str(i + 1))
+    browser_scroll(direction="down", amount=200)
+    browser_wait(500)
+
+# === while 循环 ===
+print("while loop start")
+while count < 3:
+    print("while count: " + str(count))
+    count = count + 1
+    browser_wait(200)
+
+# === 函数 ===
+fn take_shot(name):
+    browser_screenshot()
+
+take_shot("final")
+
+# === 计算 ===
+total = page + max_pages
+print("total: " + str(total))
+
+# === 文本 ===
+page_text = browser_get_text()
+if page_text:
+    print("page has " + str(len(page_text)) + " chars")

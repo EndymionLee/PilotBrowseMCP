@@ -133,7 +133,7 @@ export class WsClient {
 
   private startKeepalive(): void {
     try {
-      chrome.alarms.create(ALARM_NAME, { periodInMinutes: 0.25 }); // 每 15 秒
+      chrome.alarms.create(ALARM_NAME, { periodInMinutes: 1 }); // 每 60 秒（MV3 最短可靠间隔）
     } catch { /* ignore */ }
   }
 
@@ -148,8 +148,8 @@ export class WsClient {
     if (this.destroyed) return;
 
     if (this._connected) {
-      // 已连接，发个心跳确认连接真实可用
-      // 如果 WebSocket 实际已断开但状态没更新，send 会静默失败
+      // 发送心跳保持 WebSocket 活跃，同时阻止 SW 休眠
+      try { this.ws?.send(JSON.stringify({ type: 'ping' })); } catch {}
       if (this.ws?.readyState !== WebSocket.OPEN) {
         console.log('[WS] 检测到连接异常，强制重连');
         this.forceReconnect();

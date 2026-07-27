@@ -50,24 +50,91 @@
 - LLM 判断没有价值的场景
 - Agent 已发现正确的步骤和选择器后
 
-### 脚本生成
+### 脚本生成（PAB）
 
 用户说"做成脚本"时：
 
 1. 查看 `website-manuals/<site>/` 下的手册数据
-2. 读 `apis/README.md` 和 `apis/endpoints/<name>.json` 获取 API 调用方式
-3. 读 `pages/<page>.json` 获取元素选择器
-4. 组合成 MCP 脚本
-5. 调 `workflow_generate_script` 保存
+2. 读 `apis/`、`pages/`、`workflows/` 获取 API、选择器、步骤
+3. 生成 `.pab` 文件，需要时加控制流
+4. 保存到 `workflows/scripts/<name>.pab`
 
-**原则：**
+**PAB 语法速查：**
 
-- API 调用用 `browser_network_replay`（来自 `apis/endpoints/`）
-- DOM 操作用 `browser_click/type`（选择器来自 `pages/`）
-- 需要等待时用 `browser_wait`
-- 脚本无 LLM 运行，每步参数必须硬编码
+工具名和参数跟你调用的 MCP 工具完全一致，直接写就行。
 
-**示例 -- 从手册数据生成脚本：**
+```python
+# 注释
+name: str = "脚本"         # 变量（类型可选）
+count: int = 5
+items: list = ["a", "b"]   # 列表
+参数: dict = {"key": val}  # 字典（用于 overrides、headers）
+
+browser_open(url)          # 工具调用，和 MCP 同名
+browser_click(selector)    # 参数和 browser_click MCP 工具一样
+结果 = browser_evaluate(code="document.title")  # 返回值
+
+if 结果:                   # 条件
+    browser_screenshot()
+
+if not 结果:               # not 运算符
+    print("no result")
+
+if "关键字" in 文本:        # in 运算符（包含判断）
+    browser_click(".btn")
+
+for i in range(5):         # 循环
+    browser_wait(1000)
+
+while page < 10:            # while 循环
+    page = page + 1
+
+fn 函数名():               # 函数定义
+    browser_click(".btn")
+
+函数名()                   # 函数调用
+```
+
+**PAB 和 MCP 的关系：** 不需要映射。所有 MCP 工具（49 个）在 PAB 中同名使用。示例：
+
+```python
+# 页面工具
+结果 = browser_evaluate("document.title")
+链接 = browser_extract_links()
+元素 = browser_query("h1")
+文字 = browser_get_text()
+
+# 操作
+browser_click(".btn")
+browser_type("#input", "text")
+browser_scroll(direction="down", amount=300)
+browser_find(text="提交", tag="button")
+
+# 网络
+browser_start_network_monitor()
+数据 = browser_network_search(keyword="api")
+browser_network_wait("/api/submit", timeout=10000)
+
+# 标签页
+标签页列表 = browser_list_tabs()
+browser_close()
+browser_activate()
+
+# 数据
+cookies = browser_cookies()
+browser_screenshot()
+```
+
+**workflow 到 PAB 映射：**
+
+| Workflow 步骤 | PAB |
+|--------------|-----|
+| `click` | `browser_click(选择器)` |
+| `type` | `browser_type(选择器, 文本)` |
+| `navigate` | `browser_open(url)` |
+| 等待 API | 先 `browser_start_network_monitor()`，再 `browser_network_wait(url模式)` |
+
+**示例：**
 
 手册数据：
 ```
@@ -75,17 +142,16 @@ apis/endpoints/search.json:  GET /api/search?keyword=
 pages/homepage.json:          searchInput (#search), searchButton (.search-btn)
 ```
 
-生成的脚本：
-```json
-steps: [
-  { "method": "browser_click", "params": { "selector": "#search" } },
-  { "method": "browser_type", "params": { "selector": "#search", "text": "___keyword___" } },
-  { "method": "browser_click", "params": { "selector": ".search-btn" } },
-  { "method": "browser_network_replay", "params": { "requestId": null, "overrides": { "query": { "q": "___keyword___" } } } }
-]
+生成的 PAB：
+```python
+browser_open("https://examplesite.com")
+browser_wait(2000)
+browser_type("#search", keyword)
+browser_click(".search-btn")
+结果 = browser_network_wait("/api/search")
 ```
 
-用 `workflow_generate_script` 保存：
+保存为 `workflows/scripts/<name>.pab`，用户在扩展弹窗中加载运行。
 
 ```json
 workflow_generate_script({

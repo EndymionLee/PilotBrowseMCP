@@ -258,7 +258,7 @@ recBtn.addEventListener('click', async () => {
 });
 
 // ==== Script Library ====
-interface SavedScript { id: string; name: string; data: any; steps: number; addedAt: number; pinned?: boolean; pinnedAt?: number; }
+interface SavedScript { id: string; name: string; data: string; steps: number; addedAt: number; pinned?: boolean; pinnedAt?: number; }
 const SCRIPT_KEY = 'saved_scripts';
 const scriptAddBtn = $('scriptAddBtn');
 const scriptList = $('scriptList');
@@ -291,10 +291,11 @@ function renderScriptList() {
       const running = scriptRunners.get(s.id) || false;
       return '<div class="perm-item">' +
         '<div class="perm-info" style="flex:1;min-width:0;"><div style="font-size:11px;font-weight:500;">' + s.name + '</div>' +
-        '<div style="font-size:10px;color:var(--text-muted);">' + (running ? _('scriptRunning') : _('scriptSteps').replace('$1', String(s.steps))) + '</div></div>' +
+        '<div style="font-size:10px;color:var(--text-muted);">' + (running ? _('scriptRunning') : 'PAB ' + s.steps + ' stmts') + '</div></div>' +
         '<div style="display:flex;gap:2px;">' +
         '<button class="btn-icon script-btn-run" data-id="' + s.id + '" style="font-size:11px;width:22px;height:22px;" title="Run">' + (running ? '&#x23F9;' : '&#x25B6;') + '</button>' +
         '<button class="btn-icon script-btn-pin" data-id="' + s.id + '" style="font-size:11px;width:22px;height:22px;' + (s.pinned ? 'color:#FF9800;' : '') + '" title="' + (s.pinned ? 'Unpin' : 'Pin') + '">' + (s.pinned ? '&#x2605;' : '&#x2606;') + '</button>' +
+        '<button class="btn-icon script-btn-log" data-id="' + s.id + '" style="font-size:11px;width:22px;height:22px;" title="View log">&#x1F4CB;</button>' +
         '<button class="btn-icon script-btn-rename" data-id="' + s.id + '" style="font-size:11px;width:22px;height:22px;" title="Rename">&#x270E;</button>' +
         '<button class="btn-icon script-btn-del" data-id="' + s.id + '" style="font-size:11px;width:22px;height:22px;color:var(--red);" title="Delete">&#x2715;</button>' +
         '</div></div>';
@@ -306,15 +307,42 @@ function renderScriptList() {
       el.addEventListener('click', async (e) => {
         e.stopPropagation();
         const id = (el as HTMLElement).dataset.id || '';
-        if (scriptRunners.get(id)) { scriptRunners.set(id, false); renderScriptList(); return; }
+        // 停止运行
+        if (scriptRunners.get(id)) {
+          await bgSend({ type: 'pab_stop' });
+          scriptRunners.set(id, false); renderScriptList();
+          return;
+        }
+        // 开始运行
         const scripts = await loadScripts();
         const s = scripts.find(x => x.id === id);
         if (!s) return;
         scriptRunners.set(id, true); renderScriptList();
-        await bgSend({ type: 'script_run', steps: s.data.steps });
+        const resp = await bgSend({ type: 'pab_run', code: s.data });
         scriptRunners.set(id, false); renderScriptList();
       });
     });
+    scriptList.querySelectorAll('.script-btn-log').forEach((el) => {
+      el.addEventListener('click', async (e) => {
+        e.stopPropagation();
+        const sr = await bgSend({ type: 'script_status' });
+        const content = $('logContent');
+        const overlay = $('logOverlay');
+        if (!sr || !sr.details?.length) {
+          content.textContent = 'No execution log';
+          overlay.style.display = '';
+          return;
+        }
+        const lines = sr.details.map((d: any) => {
+          const icon = d.error ? '❌' : (d.status === 'fail' ? '❌' : '✅');
+          return icon + ' ' + (d.method || d.tool || '') + (d.error ? '\n   ' + d.error : '');
+        }).join('\n');
+        content.textContent = lines;
+        overlay.style.display = '';
+      });
+    });
+    $('logCloseBtn').addEventListener('click', () => { $('logOverlay').style.display = 'none'; });
+    $('logOverlay').addEventListener('click', (e) => { if (e.target === $('logOverlay')) $('logOverlay').style.display = 'none'; });
     scriptList.querySelectorAll('.script-btn-rename').forEach((el) => {
       el.addEventListener('click', async (e) => {
         e.stopPropagation();
@@ -352,15 +380,14 @@ function renderScriptList() {
 
 scriptAddBtn.addEventListener('click', () => {
   const input = document.createElement('input');
-  input.type = 'file'; input.accept = '.json';
+  input.type = 'file'; input.accept = '.pab';
   input.onchange = async () => {
     const file = input.files?.[0]; if (!file) return;
     try {
       const text = await file.text();
-      const data = JSON.parse(text);
-      if (!data.steps || !Array.isArray(data.steps)) return;
+      const lineCount = text.split('\n').filter(l => l.trim() && !l.trim().startsWith('#')).length;
       const scripts = await loadScripts();
-      scripts.push({ id: Date.now().toString(36), name: file.name.replace(/\.json$/, ''), data, steps: data.steps.length, addedAt: Date.now() });
+      scripts.push({ id: Date.now().toString(36), name: file.name.replace(/\.pab$/, ''), data: text, steps: lineCount, addedAt: Date.now(), type: 'pab' });
       await saveScripts(scripts);
       renderScriptList();
     } catch {}
@@ -371,6 +398,15 @@ scriptAddBtn.addEventListener('click', () => {
 // ==== Init ====
 async function init(): Promise<void> {
   applyI18n();
+  // 显示上次结果后立即清除
+  try {
+    const sr = await bgSend({ type: 'script_status' });
+    if (sr && sr.total > 0) {
+      chrome.action.setBadgeText({ text: sr.fail > 0 ? 'ERR' : 'OK' });
+      chrome.action.setBadgeBackgroundColor({ color: sr.fail > 0 ? '#FF3B30' : '#30B94E' });
+    }
+    bgSend({ type: 'script_clear' }); // 清 storage + badge
+  } catch {}
   renderScriptList();
   try { const resp = await bgSend({ type: 'ping' }); updateStatus(resp?.status === 'connected'); } catch { updateStatus(false); }
   try {

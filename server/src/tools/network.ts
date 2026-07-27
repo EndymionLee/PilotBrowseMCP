@@ -9,7 +9,7 @@ export function registerNetworkTools(server: McpServer, conn: ExtensionConnectio
   defineTool(server, conn, 'browser_start_network_monitor', {
     description:
       'Start monitoring all network requests (XHR, Fetch) for a browser tab. Requests and responses are cached for later search, inspection, and replay. ' +
-      'Each tab needs separate monitoring. ' +
+      'Each tab needs separate monitoring. Note: network monitoring only captures requests made AFTER monitoring starts. Switching to a tab that was already open before monitoring will not retroactively capture its requests. ' +
       'Parameters: tabId (required). ' +
       'Returns: confirmation message.',
     inputSchema: z.object({
@@ -159,7 +159,7 @@ export function registerNetworkTools(server: McpServer, conn: ExtensionConnectio
       'Replay a cached network request with optional parameter overrides and response extraction. ' +
       'Turns a captured API call into a reusable data primitive -- paginate, search, refresh, all without touching the DOM. ' +
       'By default runs server-side without cookies (safe for public APIs). ' +
-      'Set options.context="browser" to run the replay in the browser context with full cookies (required for authenticated APIs). ' +
+      'Set options.context="browser" to run the replay in the browser context with full cookies (required for authenticated APIs). For anti-scraping APIs, overrides.headers may need Origin, Referer, User-Agent, and Content-Type to match the real browser request. ' +
       'Parameters: requestId (required). overrides (optional): query, headers, body. extract (optional): path. ' +
       'options (optional): context ("server" | "browser", default "server"), timeout (default 15000). ' +
       'Returns: response status, headers, body preview, and extracted data if path specified.',

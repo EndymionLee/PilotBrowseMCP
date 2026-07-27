@@ -2,7 +2,7 @@
 
 [中文](README.zh-CN.md)
 
-**MCP toolset + website capability learner for the browser. Agent autonomously explores websites, discovers APIs, and learns workflows into reusable manuals. Manuals reduce token usage for future tasks. Two no-LLM script outputs: API call scripts (curl/fetch/Python) for data collection, and MCP automation scripts running directly in the Extension popup.**
+**MCP toolset + website capability learner for the browser. Agent autonomously explores websites and builds understanding manuals.**
 
 ---
 
@@ -24,13 +24,15 @@ website-manuals/<site>/
   workflows/
     README.md            # Workflow index
     flows/               # Workflow JSON files
-    scripts/             # MCP automation scripts (popup-run, no LLM)
+    scripts/             # PAB automation scripts (.pab files)
   apis/
     README.md            # API index (browse first)
     endpoints/           # API JSON files
 ```
 
 ### Guided Teaching
+
+(Using Bilibili as demo site)
 
 Stuck on complex interactions? Record or mark elements manually to help the agent learn.
 
@@ -44,25 +46,42 @@ Stuck on complex interactions? Record or mark elements manually to help the agen
 
 ### Manual Reuse
 
-Given a task, the agent checks for existing manuals. If found, it operates based on the manual -- fewer tokens, faster execution.
+Based on the exploration manual, the agent can quickly understand websites and complete tasks faster.
+
+Two no-LLM modes are also supported:
+
+- **.pab scripts** for automation tasks -- capabilities match the agent's MCP tools
+- **Python/other scripts** for specialized data collection tasks
 
 ### Demos
 
 Build various workflows, simple demo showcase.
 
-#### API Check-in Capture
+#### Automation Operations
 
-#### YouTube Like & Comment
-
-Search a keyword, find a video, like and comment.
-
-<video src="https://github.com/user-attachments/assets/129c69f7-21a7-4fbe-93ae-6b0205450933" controls width="100%" style="max-width:720px;"></video>
-
-#### Qidian Novel Saver
+##### Agent: Qidian Novel Saver
 
 Search a novel, save the first 5 chapters.
 
 <video src="https://github.com/user-attachments/assets/b244db3b-fb98-433c-b6ed-d8a74c75e802" controls width="100%" style="max-width:720px;"></video>
+
+---
+
+##### .pab Script: Bilibili Open 3 Trending Videos and Comment
+
+<img src="assets/Image/BilibiliScript.gif" alt="Bilibili open trending videos and comment" />
+
+---
+
+#### Python Script Generation
+
+Generate various scripts based on the exploration manual.
+
+For example, a novel scraper script:
+
+I used Pilot to analyze the novel website structure, chapter API, generated scraping scripts, built Docker images, deployed 9 containers on NAS, and crawled over 4000 novels in 2 days.
+
+![PaImage](assets/Image/PaImage.png)
 
 ---
 
@@ -128,7 +147,7 @@ Browser
 ## Features
 
 - **49 MCP tools** -- tab management, content extraction, DOM operations, network interception, file saving, workflow recording, script automation
-- **Script execution** -- pre-recorded tool sequences run from popup or Agent, no LLM needed. Ideal for daily check-ins, batch tasks
+- **PAB scripting** -- Python-like DSL for browser automation with if/for/fn support. Run from popup, no LLM needed
 - **Element picker** -- click any element on the page and tell the agent what it is
 - **Workflow recording** -- demonstrate operations to the agent, it learns and reuses
 - **Network API toolkit** -- monitor, search, inspect, replay with overrides, export code, and analyze site API structure

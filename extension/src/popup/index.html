@@ -200,6 +200,17 @@
     </div>
   </div>
 
+  <!-- Log Overlay -->
+  <div id="logOverlay" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.4);">
+    <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:320px;max-height:400px;background:var(--bg-card);border-radius:12px;border:1px solid var(--border);box-shadow:0 8px 32px rgba(0,0,0,0.2);display:flex;flex-direction:column;">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--border);">
+        <span style="font-size:12px;font-weight:600;">Execution Log</span>
+        <button id="logCloseBtn" style="background:none;border:none;font-size:16px;cursor:pointer;color:var(--text-muted);">&#x2715;</button>
+      </div>
+      <div id="logContent" style="padding:10px 14px;font-size:11px;font-family:monospace;overflow-y:auto;max-height:320px;white-space:pre-wrap;color:var(--text-primary);"></div>
+    </div>
+  </div>
+
   <div class="footer" id="lblFooter">Agent Browser Runtime  ·  MCP</div>
 
   <script type="module" src="./index.ts"></script>

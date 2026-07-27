@@ -36,7 +36,7 @@ export function registerBrowserTools(server: McpServer, conn: ExtensionConnectio
   });
 
   defineTool(server, conn, 'browser_activate', {
-    description: 'Switch to a specific tab and bring it to the foreground. Parameters: id (required, number). Returns: confirmation message.',
+    description: 'Switch to a specific tab and bring it to the foreground. Note: this tool uses "id" (the tab ID from browser.list_tabs), not "tabId". Other browser_* tools use "tabId". Parameters: id (required, number, from list_tabs). Returns: confirmation message.',
     inputSchema: z.object({
       id: z.number().describe('Tab ID to activate'),
     }),

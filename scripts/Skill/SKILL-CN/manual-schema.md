@@ -172,24 +172,22 @@ https://site.org       -> site_org
 
 ---
 
-## workflows/scripts/{name}.json
+## workflows/scripts/{name}.pab
 
 **填空模板：**
 
-```json
-{
-  "name": "{脚本名}",
-  "steps": [
-    { "method": "browser_open", "params": { "url": "{URL}" } },
-    { "method": "browser_wait", "params": { "ms": 2000 } },
-    { "method": "browser_click", "params": { "selector": "{CSS选择器}" } }
-  ]
-}
+```python
+# {脚本描述}
+browser_open(url="{URL}")
+browser_wait(ms=2000)
+browser_click(selector="{CSS选择器}")
 ```
 
-**校验规则：**
-- 每步的 `method` 必须是有效的 MCP 工具名（browser_xxx 或 browser_network_xxx）
-- MCP 脚本是给 Extension 直接执行的，不是给 LLM 解释的
+**规则：**
+- 工具名和 MCP 工具一致（`browser_open`、`browser_click` 等）
+- 支持：变量、if/for/while、fn、retry、input
+- 每行一个工具调用
+- 字符串值用双引号
 
 ---
 

@@ -10,7 +10,7 @@ import { logger } from '../lib/logger.js';
 
 const LEARN_DIR = path.resolve('.learn');
 const RECORDINGS_DIR = path.resolve(LEARN_DIR, 'recordings');
-const MANUALS_BASE = path.resolve(process.env.MANUALS_DIR || 'E:\\PiTest\\website-manuals');
+const MANUALS_BASE = path.resolve(process.env.MANUALS_DIR || 'website-manuals');
 
 export function registerWorkflowTools(server: McpServer, conn: ExtensionConnection): void {
   defineTool(server, conn, 'workflow_list_recordings', {
@@ -69,14 +69,14 @@ export function registerWorkflowTools(server: McpServer, conn: ExtensionConnecti
   });
 
   defineTool(server, conn, 'workflow_generate_script', {
-    description: 'Generate an MCP automation script file from workflow data. The script can be loaded and run from the Extension popup without LLM. Parameters: site (required, string), scriptName (required, string), description (required, string), steps (required, array of { method, params }). Returns: confirmation with path.',
+    description: 'Generate a PAB automation script (.pab) from workflow steps. The script can be loaded and run from the Extension popup without LLM. Supports control flow (if/for/fn). Parameters: site (required, string), scriptName (required, string), description (required, string), steps (required, array of { method, params }). Returns: confirmation with path.',
     inputSchema: z.object({
       site: z.string().describe('Site directory name, e.g. "youtube_com"'),
       scriptName: z.string().describe('Script name, e.g. "daily-checkin"'),
       description: z.string().describe('Script description'),
       steps: z.array(z.object({
         method: z.string().describe('MCP tool name, e.g. browser_open, browser_click'),
-        params: z.any().optional().describe('Tool parameters'),
+        params: z.any().optional().describe('Tool parameters as key-value pairs'),
       })).describe('Array of tool call steps'),
     }),
   }, async (args) => {
@@ -84,71 +84,57 @@ export function registerWorkflowTools(server: McpServer, conn: ExtensionConnecti
     const safeSite = site.replace(/[^a-zA-Z0-9一-龥_-]/g, '_');
     const safeName = scriptName.replace(/[^a-zA-Z0-9一-龥_-]/g, '_');
     const scriptsDir = path.resolve('website-manuals', safeSite, 'workflows', 'scripts');
-    const scriptPath = path.join(scriptsDir, `${safeName}.json`);
+    const scriptPath = path.join(scriptsDir, `${safeName}.pab`);
     await fs.mkdir(scriptsDir, { recursive: true });
-    const data = { name: safeName, description, steps };
-    await fs.writeFile(scriptPath, JSON.stringify(data, null, 2), 'utf-8');
-    logger.info('Workflow', 'Script generated', { site: safeSite, name: safeName, steps: steps.length });
-    return { success: true, path: `${safeSite}/workflows/scripts/${safeName}.json`, site: safeSite, stepCount: steps.length };
+
+    // Convert steps to PAB syntax
+    let pab = `# ${description}\n\n`;
+    for (const step of steps) {
+      const method = step.method || step.tool;
+      const params = step.params || {};
+      const argsList: string[] = [];
+      for (const [k, v] of Object.entries(params)) {
+        const val = typeof v === 'string' ? `"${v}"` : String(v);
+        argsList.push(`${k}=${val}`);
+      }
+      if (argsList.length > 0) {
+        pab += `${method}(${argsList.join(', ')})\n`;
+      } else {
+        pab += `${method}()\n`;
+      }
+    }
+    pab += `\n`;
+
+    await fs.writeFile(scriptPath, pab, 'utf-8');
+    logger.info('Workflow', 'PAB script generated', { site: safeSite, name: safeName, steps: steps.length });
+    return { success: true, path: `${safeSite}/workflows/scripts/${safeName}.pab`, site: safeSite, stepCount: steps.length };
   });
 
   defineTool(server, conn, 'workflow_execute_script', {
-    description: 'Load and execute an MCP script from website-manuals. Each step runs through the Extension. Results are collected and returned. The script path is website-manuals/<site>/workflows/scripts/<name>.json. Parameters: site (required, string), scriptName (required, string). Returns: execution summary with per-step results.',
+    description: 'Read a PAB script (.pab) from website-manuals and send it to the Extension for execution. The script runs via PAB Interpreter with full control flow support. Parameters: site (required, string), scriptName (required, string, without .pab suffix). Returns: execution summary.',
     inputSchema: z.object({
       site: z.string().describe('Site directory name, e.g. "youtube_com"'),
-      scriptName: z.string().describe('Script name without .json, e.g. "daily-checkin"'),
+      scriptName: z.string().describe('Script name without .pab, e.g. "daily-checkin"'),
     }),
   }, async (args) => {
     const { site, scriptName } = args as any;
     const safeSite = site.replace(/[^a-zA-Z0-9一-龥_-]/g, '_');
     const safeName = scriptName.replace(/[^a-zA-Z0-9一-龥_-]/g, '_');
-    const scriptPath = path.resolve('website-manuals', safeSite, 'workflows', 'scripts', `${safeName}.json`);
+    const scriptPath = path.resolve(MANUALS_BASE, safeSite, 'workflows', 'scripts', `${safeName}.pab`);
 
-    let script: any;
-    try { script = JSON.parse(await fs.readFile(scriptPath, 'utf-8')); }
-    catch { throw new Error(`Script not found: ${safeSite}/workflows/scripts/${safeName}.json`); }
+    let pabCode: string;
+    try { pabCode = await fs.readFile(scriptPath, 'utf-8'); }
+    catch { throw new Error(`Script not found: ${safeSite}/workflows/scripts/${safeName}.pab`); }
 
-    if (!script.steps?.length) return JSON.stringify({ total: 0, ok: 0, fail: 0, message: 'No steps' });
-
-    // MCP 工具名 -> Extension handler 名映射
-    const methodMap: Record<string, string> = {
-      browser_open: 'open_tab', browser_close: 'close_tab', browser_activate: 'activate_tab',
-      browser_list_tabs: 'list_tabs', browser_current_page: 'list_tabs',
-      browser_click: 'click_element', browser_type: 'type_text', browser_scroll: 'scroll_page',
-      browser_query: 'query_dom', browser_evaluate: 'evaluate', browser_find: 'find_element',
-      browser_wait: 'wait', browser_wait_for_element: 'wait_for_element',
-      browser_get_markdown: 'get_markdown', browser_get_html: 'get_html', browser_get_text: 'get_text',
-      browser_extract_article: 'extract_article', browser_extract_table: 'extract_table',
-      browser_extract_links: 'extract_links', browser_extract_images: 'extract_images',
-      browser_start_network_monitor: 'start_network_monitor',
-      browser_stop_network_monitor: 'stop_network_monitor',
-      browser_network_search: 'network_search', browser_network_detail: 'network_get',
-      browser_network_wait: 'network_wait', browser_network_replay: 'network_replay',
-      browser_network_clear_cache: 'network_clear_cache',
-      browser_cookies: 'get_cookies', browser_local_storage: 'get_local_storage',
-      browser_screenshot: 'screenshot',
-      browser_permissions_list: 'permissions_list', browser_permissions_grant: 'permissions_grant',
-      browser_permissions_revoke: 'permissions_revoke',
-    };
-
-    const results: any[] = [];
-    let ok = 0, fail = 0;
-
-    for (let i = 0; i < script.steps.length; i++) {
-      const step = script.steps[i];
-      const mcpMethod = step.method || step.tool;
-      const innerMethod = methodMap[mcpMethod] || mcpMethod;
-      try {
-        const r = await conn.sendRequest<any>(innerMethod, step.params || {});
-        results.push({ step: i + 1, method: mcpMethod, status: 'ok' });
-        ok++;
-      } catch (err) {
-        results.push({ step: i + 1, method: mcpMethod, status: 'fail', error: (err as Error).message });
-        fail++;
-      }
-    }
-
-    return JSON.stringify({ total: script.steps.length, ok, fail, results }, null, 2);
+    // 通过 Extension 执行（PAB Interpreter），等待完成
+    const result = await conn.sendRequest<any>('pab_run', { code: pabCode });
+    const summary = result?.details ? {
+      total: result.total || result.details.length,
+      ok: result.ok || 0,
+      fail: result.fail || 0,
+      results: result.details,
+    } : { total: 1, ok: 0, fail: 1, results: [{ step: 1, status: 'fail', error: result?.error || 'Unknown error' }] };
+    return JSON.stringify(summary, null, 2);
   });
 
   defineTool(server, conn, 'workflow_list', {
@@ -240,7 +226,7 @@ export function registerWorkflowTools(server: McpServer, conn: ExtensionConnecti
     description: 'Validate a website manual file against the standard schema. Checks field names, required fields, and forbidden patterns. Call before saving any manual file. Parameters: site (required, string), fileType (required, string: page|navigation|workflow|api|script|readme|apis_index|workflows_index), filePath (required, string: path to the file to validate). Returns: list of errors, empty array if valid.',
     inputSchema: z.object({
       site: z.string().describe('Site directory name, e.g. "youtube_com"'),
-      fileType: z.enum(['page', 'navigation', 'workflow', 'api', 'script', 'readme', 'apis_index', 'workflows_index']).describe('Type of file to validate'),
+      fileType: z.enum(['page', 'navigation', 'workflow', 'api', 'script', 'pab', 'readme', 'apis_index', 'workflows_index']).describe('Type of file to validate'),
       filePath: z.string().describe('Full path to the file to validate'),
     }),
   }, async (args) => {
@@ -248,6 +234,40 @@ export function registerWorkflowTools(server: McpServer, conn: ExtensionConnecti
     const errors: string[] = [];
     try {
       const content = await fs.readFile(filePath, 'utf-8');
+
+      // Markdown 文件（readme / apis_index / workflows_index）：检查表格结构
+      if (fileType === 'readme' || fileType === 'apis_index' || fileType === 'workflows_index') {
+        if (!content.includes('[pages/](pages/)') && !content.includes('apis/')) {
+          errors.push('README must contain directory links (pages/, navigation/, etc.)');
+        }
+        if (!content.includes('|')) errors.push('Index README should contain a markdown table');
+        return JSON.stringify({ valid: errors.length === 0, errors }, null, 2);
+      }
+
+      // PAB 文件验证：检查基本语法
+      if (fileType === 'pab') {
+        const lines = content.split('\n');
+        for (let i = 0; i < lines.length; i++) {
+          const line = lines[i];
+          const trimmed = line.trim();
+          if (!trimmed || trimmed.startsWith('#')) continue;
+          // 检查未闭合的括号
+          const opens = (trimmed.match(/\(/g) || []).length;
+          const closes = (trimmed.match(/\)/g) || []).length;
+          if (opens !== closes) errors.push(`Line ${i + 1}: unclosed parentheses`);
+          // 检查字符串引号
+          const quotes = (trimmed.match(/"/g) || []).length;
+          if (quotes % 2 !== 0) errors.push(`Line ${i + 1}: unclosed string`);
+          // 检查函数定义
+          if (trimmed.startsWith('fn ') && !trimmed.endsWith(':')) errors.push(`Line ${i + 1}: fn declaration must end with ':'`);
+          // 检查控制流
+          if ((trimmed.startsWith('if ') || trimmed.startsWith('elif ') || trimmed.startsWith('else') || trimmed.startsWith('for ') || trimmed.startsWith('while ')) && !trimmed.endsWith(':')) {
+            errors.push(`Line ${i + 1}: control statement must end with ':'`);
+          }
+        }
+        return JSON.stringify({ valid: errors.length === 0, errors }, null, 2);
+      }
+
       const data = JSON.parse(content);
 
       // Page validation
@@ -307,7 +327,7 @@ export function registerWorkflowTools(server: McpServer, conn: ExtensionConnecti
           if (!['GET', 'POST', 'PUT', 'DELETE', 'PATCH'].includes(a.method)) errors.push(`${key}: invalid method "${a.method}"`);
           if (!a.url) errors.push(`${key}: missing url`);
           if (!a.url?.startsWith('http')) errors.push(`${key}: url must start with https://`);
-          if (!a.boundTo?.length) errors.push(`${key}: missing boundTo`);
+          if (!a.boundTo || !Array.isArray(a.boundTo) || a.boundTo.length === 0) errors.push(`${key}: boundTo must be a non-empty array (at least one workflow reference)`);
           if (!a.discoveredAt) errors.push(`${key}: missing discoveredAt`);
           if (a.endpoint) errors.push(`${key}: forbidden field "endpoint", use "url"`);
           if (a.request) errors.push(`${key}: forbidden field "request"`);
