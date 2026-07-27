@@ -13,7 +13,14 @@ import { registerCookieHandlers } from './handlers/cookies.js';
 import { registerScreenshotHandlers } from './handlers/screenshot.js';
 import { registerPermissionHandlers } from './handlers/permissions.js';
 import { permissionStore, PermissionStore } from './permissions.js';
-import { startRec, stopRec, isRecording, resetRec } from './handlers/recorder.js';
+import { startRec, stopRec, isRecording, resetRec, reInject } from './handlers/recorder.js';
+
+let currentRecTabId = 0;
+let recTabs = new Set<number>();
+let recTabCounts = new Map<number, number>(); // tabId -> steps seen
+let recGlobalCount = 0;
+let recBlink: ReturnType<typeof setInterval> | null = null;
+let blinkContent = 'REC';
 
 const WS_URL = 'ws://localhost:9456';
 const wsClient = new WsClient(WS_URL);
@@ -29,8 +36,35 @@ registerPermissionHandlers(router);
 
 chrome.tabs.onCreated.addListener(() => notifyTabs());
 chrome.tabs.onRemoved.addListener(() => notifyTabs());
-chrome.tabs.onUpdated.addListener(() => notifyTabs());
-chrome.tabs.onActivated.addListener(() => notifyTabs());
+chrome.tabs.onUpdated.addListener((tabId, changeInfo) => {
+  notifyTabs();
+  if (isRecording() && changeInfo.status === 'complete') {
+    activateRecOnTab(tabId, 1);
+  }
+});
+chrome.tabs.onActivated.addListener((activeInfo) => {
+  notifyTabs();
+  if (isRecording()) {
+    activateRecOnTab(activeInfo.tabId);
+  }
+});
+
+async function activateRecOnTab(tabId: number, retries = 2): Promise<void> {
+  if (!isRecording()) return;
+  for (let i = 0; i < retries; i++) {
+    try {
+      await chrome.tabs.sendMessage(tabId, { source: 'browser-mcp-bg', method: 'recording_start' });
+      recTabs.add(tabId);
+      return;
+    } catch {
+      // content script 未加载，注入后再试
+      try {
+        await chrome.scripting.executeScript({ target: { tabId }, files: ['content.js'] });
+        await new Promise((r) => setTimeout(r, 700));
+      } catch { return; }
+    }
+  }
+}
 
 async function notifyTabs(): Promise<void> {
   try {
@@ -65,6 +99,30 @@ async function waitForRecordingResult(responseKey: string): Promise<any[]> {
 
 chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
   const msg = message as any;
+
+  // content script 消息：检查录制状态（页面跳转后内容脚本重启时调用）
+  if (msg.source === 'browser-mcp-content' && msg.type === 'recording_check') {
+    const tabId = _sender?.tab?.id;
+    if (isRecording() && tabId) activateRecOnTab(tabId, 1);
+    return;
+  }
+
+  // content script 消息：录制状态更新（全局计数）
+  if (msg.source === 'browser-mcp-content' && msg.type === 'recording_active') {
+    const tabId = _sender?.tab?.id || 0;
+    const prev = recTabCounts.get(tabId) || 0;
+    if (msg.stepCount > prev) {
+      const delta = msg.stepCount - prev;
+      recGlobalCount += delta;
+      recTabCounts.set(tabId, msg.stepCount);
+    }
+    const displayCount = recGlobalCount || msg.stepCount;
+    blinkContent = String(displayCount);
+    chrome.action.setBadgeText({ text: String(displayCount) });
+    chrome.action.setBadgeBackgroundColor({ color: '#E0352B' });
+    return;
+  }
+
   if (msg.source !== 'browser-mcp-popup') return;
 
   switch (msg.type) {
@@ -201,13 +259,38 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
     // 录制
     case 'recording_start': {
       chrome.tabs.query({ active: true, currentWindow: true }).then((tabs) => {
-        startRec(tabs[0]?.id || 0).then(sendResponse);
+        const tab = tabs[0];
+        if (!tab || !tab.url || tab.url.startsWith('chrome://') || tab.url.startsWith('chrome-extension://') || tab.url.startsWith('about:')) {
+          sendResponse({ success: false, error: '当前页面不支持录制（请打开一个普通网页）' });
+          return;
+        }
+        currentRecTabId = tab.id!;
+        recTabs.add(tab.id!);
+        recTabCounts.clear();
+        recGlobalCount = 0;
+        // 开始闪烁 badge
+        chrome.action.setBadgeText({ text: 'REC' });
+        chrome.action.setBadgeBackgroundColor({ color: '#E0352B' });
+        if (recBlink) clearInterval(recBlink);
+        let blinkShow = true;
+        recBlink = setInterval(() => {
+          blinkShow = !blinkShow;
+          chrome.action.setBadgeText({ text: blinkShow ? blinkContent : '' });
+        }, 800);
+        startRec(tab.id!).then(sendResponse);
       });
       return true;
     }
 
     case 'recording_stop': {
-      stopRec().then((result) => sendResponse(result));
+      const allTabs = Array.from(recTabs);
+      currentRecTabId = 0;
+      recTabs.clear();
+      recTabCounts.clear();
+      recGlobalCount = 0;
+      if (recBlink) { clearInterval(recBlink); recBlink = null; }
+      chrome.action.setBadgeText({ text: '' });
+      stopRec(allTabs).then((result) => sendResponse(result));
       return true;
     }
 
@@ -217,6 +300,12 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
 
     case 'recording_reset':
       resetRec();
+      currentRecTabId = 0;
+      recTabs.clear();
+      recTabCounts.clear();
+      recGlobalCount = 0;
+      if (recBlink) { clearInterval(recBlink); recBlink = null; }
+      chrome.action.setBadgeText({ text: '' });
       sendResponse({ success: true });
       return true;
 
@@ -235,12 +324,107 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
       bufferedSend({ type: 'event', event: 'save_element', data: { description: msg.description, selector: msg.selector, url: msg.url } })
         .then((sent) => { sendResponse({ success: true, sent, message: sent ? '已发送' : 'Server 离线，已暂存' }); });
       return true;
+    // 运行脚本（popup 一次性发送全部步骤，background 逐条执行）
+    case 'script_run': {
+      const runScript = async () => {
+        const steps: { method: string; params: any }[] = msg.steps || [];
+        // MCP 工具名 -> 内部 handler 名
+        const methodMap: Record<string, string> = {
+          browser_open: 'open_tab', browser_close: 'close_tab', browser_activate: 'activate_tab',
+          browser_list_tabs: 'list_tabs',
+          browser_click: 'click_element', browser_type: 'type_text', browser_scroll: 'scroll_page',
+          browser_query: 'query_dom', browser_evaluate: 'evaluate', browser_find: 'find_element',
+          browser_wait: 'wait', browser_wait_for_element: 'wait_for_element',
+          browser_get_markdown: 'get_markdown', browser_get_html: 'get_html', browser_get_text: 'get_text',
+          browser_extract_article: 'extract_article', browser_extract_table: 'extract_table',
+          browser_extract_links: 'extract_links', browser_extract_images: 'extract_images',
+          browser_start_network_monitor: 'start_network_monitor',
+          browser_stop_network_monitor: 'stop_network_monitor',
+          browser_network_search: 'network_search', browser_network_detail: 'network_get',
+          browser_network_wait: 'network_wait', browser_network_replay: 'network_replay',
+          browser_network_clear_cache: 'network_clear_cache',
+          browser_cookies: 'get_cookies', browser_local_storage: 'get_local_storage',
+          browser_screenshot: 'screenshot',
+          browser_permissions_list: 'permissions_list', browser_permissions_grant: 'permissions_grant',
+          browser_current_page: 'list_tabs',
+          browser_permissions_revoke: 'permissions_revoke',
+        };
+        // 需要 tabId 的工具（自动注入 params.tabId）
+        const needTabId = new Set(['click_element', 'type_text', 'scroll_page', 'query_dom', 'evaluate', 'find_element',
+          'wait_for_element', 'screenshot', 'get_markdown', 'get_html', 'get_text',
+          'extract_article', 'extract_table', 'extract_links', 'extract_images',
+          'start_network_monitor', 'stop_network_monitor',
+          'network_search', 'network_wait', 'network_replay', 'network_clear_cache',
+          'get_cookies', 'get_local_storage']);
+        // 需要 id 的工具（自动注入 params.id，用于 close_tab / activate_tab）
+        const needId = new Set(['close_tab', 'activate_tab']);
+        let activeTabId: number | null = null;
+        sendResponse({ success: true, total: steps.length });
+        let ok = 0, fail = 0;
+        const details: { step: number; method: string; status: string; error?: string }[] = [];
+        chrome.action.setBadgeText({ text: '...' });
+        chrome.action.setBadgeBackgroundColor({ color: '#FF9800' });
+        for (let i = 0; i < steps.length; i++) {
+          const step = steps[i];
+          const innerMethod = methodMap[step.method] || step.method;
+          const params = { ...(step.params || {}) };
+          if (activeTabId && needTabId.has(innerMethod) && !params.tabId) {
+            params.tabId = activeTabId;
+          }
+          if (activeTabId && needId.has(innerMethod) && !params.id) {
+            params.id = activeTabId;
+          }
+          chrome.action.setBadgeText({ text: `${i + 1}/${steps.length}` });
+          let status = 'ok';
+          let error: string | undefined;
+          try {
+            if (innerMethod === 'wait') {
+              const ms = params.ms || 1000;
+              await new Promise((r) => setTimeout(r, ms));
+            } else {
+              const req = { type: 'request' as const, id: `script_${i}_${Date.now()}`, method: innerMethod, params };
+              const result: any = await new Promise((resolve, reject) => {
+                router.dispatch(req, (res, err) => {
+                  if (err) reject(new Error(err.message)); else resolve(res);
+                }).catch(reject);
+              });
+              if (innerMethod === 'open_tab' && result?.tab?.id) {
+                activeTabId = result.tab.id;
+              }
+            }
+            ok++;
+          } catch (e) {
+            status = 'fail';
+            error = (e as Error).message;
+            fail++;
+          }
+          details.push({ step: i + 1, method: step.method, status, error });
+        }
+        scriptResults = { ok, fail, total: steps.length, details };
+        chrome.action.setBadgeText({ text: fail > 0 ? `${fail}F` : 'OK' });
+        chrome.action.setBadgeBackgroundColor({ color: fail > 0 ? '#FF3B30' : '#30B94E' });
+        setTimeout(() => { chrome.action.setBadgeText({ text: '' }); }, 5000);
+      };
+      runScript();
+      return;
+    }
+    // 查询脚本状态（popup 打开时调用）
+    case 'script_status': {
+      const lastResult = scriptResults;
+      sendResponse(lastResult);
+      return true;
+    }
+
+    case 'script_clear': {
+      scriptResults = null;
+      chrome.action.setBadgeText({ text: '' });
+      sendResponse({ success: true });
+      return true;
+    }
   }
 });
 
-chrome.alarms.onAlarm.addListener((alarm) => {
-  if (alarm.name === 'browser-mcp-keepalive') wsClient.onAlarm();
-});
+let scriptResults: { ok: number; fail: number; total: number; details?: any[] } | null = null;
 
 // ---- 缓冲发送（Server 离线时暂存，连上后自动发）----
 const PENDING_KEY = 'pending_events';

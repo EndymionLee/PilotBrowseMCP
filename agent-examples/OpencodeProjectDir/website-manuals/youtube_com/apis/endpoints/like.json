@@ -1,0 +1,17 @@
+{
+  "likeVideo": {
+    "description": "Like or dislike a video. Uses separate endpoints for like/dislike/removelike",
+    "method": "POST",
+    "url": "https://www.youtube.com/youtubei/v1/like/like",
+    "params": {
+      "videoId": { "type": "string", "required": true, "source": "request_body" },
+      "status": { "type": "string", "required": true, "source": "request_body", "values": ["LIKE", "DISLIKE", "INDIFFERENT"] }
+    },
+    "response": {
+      "type": "json",
+      "fields": ["responseContext"]
+    },
+    "boundTo": ["likeVideo"],
+    "discoveredAt": "2026-07-26"
+  }
+}

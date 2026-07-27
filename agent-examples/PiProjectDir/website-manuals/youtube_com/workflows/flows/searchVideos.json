@@ -1,0 +1,10 @@
+{
+  "searchVideos": {
+    "description": "Search YouTube for videos by typing a query",
+    "startsOn": "home",
+    "steps": [
+      { "action": "type", "target": "searchInput", "params": { "text": "___search_query___" } },
+      { "action": "click", "target": "searchButton" }
+    ]
+  }
+}

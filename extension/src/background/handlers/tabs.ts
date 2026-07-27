@@ -25,4 +25,13 @@ export function registerTabHandlers(router: Router): void {
     await activateTab((params as { id: number }).id);
     respond({ success: true });
   });
+
+  router.register('get_foreground_setting', async (_params, respond) => {
+    try {
+      const r = await chrome.storage.local.get('foreground');
+      respond({ foreground: r.foreground !== false });
+    } catch {
+      respond({ foreground: true });
+    }
+  });
 }

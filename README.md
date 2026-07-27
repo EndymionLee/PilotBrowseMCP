@@ -2,7 +2,7 @@
 
 [中文](README.zh-CN.md)
 
-**Discover website capabilities through user behaviors. APIs and automation workflows are both implementations of the same capability.**
+**MCP toolset + website capability learner for the browser. Agent autonomously explores websites, discovers APIs, and learns workflows into reusable manuals. Manuals reduce token usage for future tasks. Two no-LLM script outputs: API call scripts (curl/fetch/Python) for data collection, and MCP automation scripts running directly in the Extension popup.**
 
 ---
 
@@ -24,6 +24,7 @@ website-manuals/<site>/
   workflows/
     README.md            # Workflow index
     flows/               # Workflow JSON files
+    scripts/             # MCP automation scripts (popup-run, no LLM)
   apis/
     README.md            # API index (browse first)
     endpoints/           # API JSON files
@@ -126,7 +127,8 @@ Browser
 
 ## Features
 
-- **45 MCP tools** -- tab management, content extraction, DOM operations, network interception, file saving, workflow recording
+- **49 MCP tools** -- tab management, content extraction, DOM operations, network interception, file saving, workflow recording, script automation
+- **Script execution** -- pre-recorded tool sequences run from popup or Agent, no LLM needed. Ideal for daily check-ins, batch tasks
 - **Element picker** -- click any element on the page and tell the agent what it is
 - **Workflow recording** -- demonstrate operations to the agent, it learns and reuses
 - **Network API toolkit** -- monitor, search, inspect, replay with overrides, export code, and analyze site API structure
@@ -175,6 +177,8 @@ Browser
 | | `workflow_list` | List processed workflows in website-manuals |
 | | `workflow_add_element` | Save a user-marked element to pages/ |
 | | `workflow_generate` | Save a processed workflow to website-manuals |
+| | `workflow_generate_script` | Generate an MCP automation script |
+| | `workflow_execute_script` | Execute an MCP automation script |
 | **Data** | `browser_cookies` | Read cookies (requires permission) |
 | | `browser_local_storage` | Read LocalStorage (requires permission) |
 | | `browser_screenshot` | Take screenshot (requires permission) |

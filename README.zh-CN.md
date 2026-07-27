@@ -2,7 +2,7 @@
 
 [English](README.md)
 
-**通过用户行为发现网站 API 和能力，沉淀为可复用的能力模型。**
+**浏览器的 MCP 工具集 + 网站能力学习器。Agent 自主探索网站、发现 API、学习操作流程，沉淀为可复用的网站手册。手册让后续 Agent 任务更省 token；还可生成两种完全不需要 LLM 的可执行脚本：调用脚本（导出为 curl/fetch/Python 等，直连接口批量拉取）；MCP 自动化脚本在浏览器中按步骤执行操作。**
 
 ---
 
@@ -24,6 +24,7 @@ website-manuals/<site>/
   workflows/
     README.md            # 流程索引
     flows/               # workflow JSON
+    scripts/             # MCP 自动化脚本（弹窗运行，无 LLM）
   apis/
     README.md            # API 索引（先读）
     endpoints/           # API JSON
@@ -50,8 +51,6 @@ website-manuals/<site>/
 构建各种工作流，简单样例展示。
 
 #### 抓包提取签到api
-
-
 
 #### YouTube 视频点赞
 
@@ -130,7 +129,8 @@ Browser
 
 ## 特性
 
-- **45 个 MCP 工具** -- 标签页管理、内容提取、DOM 操作、网络拦截、文件保存、录制
+- **49 个 MCP 工具** -- 标签页管理、内容提取、DOM 操作、网络拦截、文件保存、录制、脚本自动化
+- **脚本执行** -- 预录的工具序列可在弹窗或 Agent 中直接运行，不需要 LLM。适合每日签到、批量操作
 - **元素拾取** -- 点页面上任意元素，告诉 Agent 这是什么
 - **录制工作流** -- 演示一遍，Agent 学会并复用
 - **网络 API 工具集** -- 监听、搜索、详情、重放(含 overrides + extract)、导出代码、站点 API 结构分析
@@ -149,7 +149,7 @@ Browser
 |                  | `browser_inspect_page`                      | 查看页面结构骨架                          |
 |                  | `browser_query`                             | CSS 选择器查询（穿透 Shadow DOM）         |
 |                  | `browser_evaluate`                          | 执行 JS，处理复杂交互                     |
-|                  | `browser_extract_article`                   | 提取文章元数据（标题/作者/日期/正文）      |
+|                  | `browser_extract_article`                   | 提取文章元数据（标题/作者/日期/正文）     |
 |                  | `browser_extract_table`                     | 提取表格为 JSON                           |
 |                  | `browser_extract_links`                     | 提取页面所有链接                          |
 |                  | `browser_extract_images`                    | 提取图片信息（src/alt/尺寸）              |
@@ -162,7 +162,7 @@ Browser
 |                  | `browser_save_xpath`                        | 按 XPath 提取并保存                       |
 | **网络**   | `browser_start_network_monitor`             | 开始拦截请求                              |
 |                  | `browser_stop_network_monitor`              | 停止拦截（缓存保留，可继续查看/重放）     |
-|                  | `browser_network_clear_cache`               | 清除缓存的请求（不停监听）                 |
+|                  | `browser_network_clear_cache`               | 清除缓存的请求（不停监听）                |
 |                  | `browser_network_search`                    | 搜索缓存的请求                            |
 |                  | `browser_network_detail`                    | 获取请求完整详情（header/body/耗时）      |
 |                  | `browser_network_wait`                      | 等待匹配的请求出现（替代固定延时）        |
@@ -179,6 +179,8 @@ Browser
 |                  | `workflow_list`                             | 列出已生成的 workflow                     |
 |                  | `workflow_add_element`                      | 保存用户标记的元素到 pages/               |
 |                  | `workflow_generate`                         | 生成 workflow                             |
+|                  | `workflow_generate_script`                  | 生成 MCP 自动化脚本                        |
+|                  | `workflow_execute_script`                   | 执行 MCP 自动化脚本                        |
 | **数据**   | `browser_cookies`                           | 读取 Cookie（需授权）                     |
 |                  | `browser_local_storage`                     | 读取 LocalStorage（需授权）               |
 |                  | `browser_screenshot`                        | 截图（需授权）                            |

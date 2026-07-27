@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "default_locale": "en",
   "name": "Pilot Browse MCP",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "为 AI Agent 提供真实浏览器环境控制能力的 MCP Runtime",
   "permissions": [
     "tabs",

@@ -25,6 +25,10 @@ Explore websites, understand interaction capabilities, discover APIs, and genera
 | 5. Evolution | [evolution.md](evolution.md) | Improve implementations over time |
 | 6. Batch Tasks | [batch-tasks.md](batch-tasks.md) | Python scripts for bulk work |
 
+## Validation
+
+Before saving any manual file, run `workflow_validate_manual` to check format compliance. See [manual-schema.md](manual-schema.md) for all schemas.
+
 ## Output
 
 ```

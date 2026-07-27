@@ -1,0 +1,9 @@
+{
+  "likeVideo": {
+    "description": "Like the currently playing video",
+    "startsOn": "video-watch",
+    "steps": [
+      { "action": "click", "target": "likeButton" }
+    ]
+  }
+}

@@ -1,54 +1,104 @@
 # Manual Schema
 
+## Site Naming Convention
+
+Directory name: `hostname_part1_part2_part3`
+
+Format: take the hostname, remove `www.`, replace all `.` with `_`.
+
+```
+https://www.site.com   -> site_com
+https://sub.site.co.jp -> sub_site_co_jp
+https://site.org       -> site_org
+```
+
+Rules:
+- Always lowercase
+- Remove `www.` prefix
+- Replace all `.` with `_`
+- No other special characters
+
+## Temporary Data (.learn/)
+
+Intermediate data from exploration lives in `.learn/`:
+
+```
+.learn/
+  recordings/        # Raw user recordings from popup
+  picked-elements/   # User-marked elements from popup
+```
+
+Lifecycle:
+1. User records/marks from popup -> saved to `.learn/`
+2. Agent reviews and processes -> saves to `website-manuals/`
+3. Raw files in `.learn/` can be deleted after processing
+
+## Validation
+
+Before saving any file, validate against the schemas below. Use `workflow_validate_manual` to check automatically.
+
+---
+
 ## README.md (site root)
 
-Entry point - lightweight index, just links to subdirectories.
+**Template** (fill in, do not change structure):
 
 ```markdown
-# <Site> Manual
+# {站点名} Manual
 - Pages: see [pages/](pages/)
 - Navigation: see [navigation/](navigation/)
 - Workflows: see [workflows/](workflows/)
 - APIs: see [apis/](apis/)
 ```
 
-## workflows/README.md (workflow index)
+**Validation:**
+- Must contain exactly the 4 directory links above
+- No inline documentation of site features
+- No API details or workflow steps
 
-Lists all workflows with name + description.
+---
 
-```markdown
-# Workflows
-| File | Description | Start Page | Steps |
-|------|-------------|------------|-------|
-| flows/search.json | Search products | Home | 3 |
-```
+## apis/README.md
 
-Workflow files: `workflows/flows/<name>.json`
-
-## apis/README.md (API index)
-
-Lists all APIs with name + description only. Agent reads this first then loads specific `endpoints/<name>.json`.
+**Template:**
 
 ```markdown
 # APIs
 | File | Description | Method | URL | Bound Workflow |
 |------|-------------|--------|-----|----------------|
-| endpoints/search.json | Search products | GET | /api/search | searchProducts |
+| endpoints/{name}.json | {description} | {GET/POST} | {url} | {workflowName} |
+```
+
+**Validation:**
+- Each row maps to an existing file in `apis/endpoints/`
+- `Method` must be one of: GET, POST, PUT, DELETE, PATCH
+
+---
+
+## workflows/README.md
+
+**Template:**
+
+```markdown
+# Workflows
+| File | Description | Start Page | Steps |
+|------|-------------|------------|-------|
+| flows/{name}.json | {description} | {page} | {N} |
 ```
 
 ---
 
-## pages/<page>.json
+## pages/{page}.json
 
-Interactive elements on a page. Created by `workflow_add_element` or manually.
+**Template** (fill fields only, do not add wrapper keys):
 
 ```json
 {
-  "likeButton": {
+  "{elementName}": {
     "locator": {
       "type": "css",
-      "selector": ".video-like",
-      "altSelectors": ["button[title*='like']"]
+      "selector": "{css selector}",
+      "altSelectors": ["{fallback selector}"]
     },
     "capabilities": ["click"],
     "interaction": { "action": "click", "method": "dom" }
@@ -56,82 +106,122 @@ Interactive elements on a page. Created by `workflow_add_element` or manually.
 }
 ```
 
-| Field | Required | Description |
-|-------|----------|-------------|
+**Schema validation:**
+| Field | Required | Allowed Values |
+|-------|----------|---------------|
 | `locator.type` | yes | css, shadow, xpath, iframe |
-| `locator.selector` | yes | CSS or XPath |
-| `locator.altSelectors` | no | Fallback selectors |
-| `capabilities` | yes | click, type, focus, hover... |
-| `interaction.action` | yes | click, input, scroll... |
+| `locator.selector` | yes | string |
+| `locator.altSelectors` | no | string array |
+| `capabilities` | yes | click, type, input, focus, hover, scroll, read |
+| `interaction.action` | yes | click, type, input, scroll, wait, hover, pressKey, select, evaluate |
 | `interaction.method` | yes | dom, cdp, execCommand |
+
+**Forbidden:** `page`, `url`, `title`, `parameters` at root level.
 
 ---
 
-## navigation/<from>-to-<to>.json
+## navigation/{from}-to-{to}.json
 
-Navigation path between pages.
+**Template:**
 
 ```json
 {
-  "Home->Video Page": {
-    "from": "Home",
-    "to": "Video Page",
-    "steps": [{ "action": "click", "page": "Home", "target": "videoCard" }],
+  "{from}->{to}": {
+    "from": "{from}",
+    "to": "{to}",
+    "steps": [{ "action": "click", "page": "{from}", "target": "{elementName}" }],
     "backMethods": [{ "action": "browser_back" }]
   }
 }
 ```
 
+**Schema validation:**
+- `from` and `to` must match page names used in `pages/` files
+- `steps[].action` must be one of: click, type, input, scroll, wait
+- `steps[].target` must reference an element name in `pages/{from}.json`
+
 ---
 
-## workflows/flows/<name>.json
+## workflows/flows/{name}.json
 
-Automation workflow. Created by `workflow_generate`.
+**Template:**
 
 ```json
 {
-  "searchProducts": {
-    "description": "Search products by keyword",
-    "startsOn": "Home",
+  "{workflowName}": {
+    "description": "{what this workflow does}",
+    "startsOn": "{starting page name}",
     "steps": [
-      { "action": "click", "target": "searchInput" },
-      { "action": "type", "target": "searchInput", "params": { "text": "___keyword___" } },
-      { "action": "click", "target": "searchButton" }
+      { "action": "click", "target": "{elementName}" },
+      { "action": "type", "target": "{elementName}", "params": { "text": "___input___" } }
     ]
   }
 }
 ```
 
-**Actions**: click, type, input, scroll, wait, hover, pressKey, select, evaluate
+**Schema validation:**
+| Field | Required | Description |
+|-------|----------|-------------|
+| `description` | yes | Human-readable one-liner |
+| `startsOn` | yes | Must match a page name from `pages/` |
+| `steps[].action` | yes | One of: click, type, input, scroll, wait, hover, pressKey, select, evaluate |
+| `steps[].target` | yes | Must reference an element in the startsOn page |
+| `params.text` | for type action | Use `___placeholder___` for variable parts |
+
+**Forbidden:** `locator` as step field (use `target` instead), `duration` (use `params.ms` instead).
 
 ---
 
-## apis/endpoints/<name>.json
+## workflows/scripts/{name}.json
 
-API definition. Primary implementation of a capability. Must link to workflow via `boundTo`.
+**Template:**
 
 ```json
 {
-  "searchProducts": {
-    "description": "Search product listing",
+  "name": "{script name}",
+  "steps": [
+    { "method": "browser_open", "params": { "url": "{url}" } },
+    { "method": "browser_wait", "params": { "ms": 2000 } },
+    { "method": "browser_click", "params": { "selector": "{css selector}" } }
+  ]
+}
+```
+
+**Schema validation:**
+- Each step `method` must be a valid MCP tool name (browser_xxx or browser_network_xxx)
+- MCP script is for direct Extension execution, not LLM interpretation
+
+---
+
+## apis/endpoints/{name}.json
+
+**Template:**
+
+```json
+{
+  "{capabilityName}": {
+    "description": "{what this API does}",
     "method": "GET",
-    "url": "https://api.examplesite.com/search",
+    "url": "https://{full API URL}",
     "params": {
-      "keyword": { "type": "string", "required": true, "source": "user_input" },
-      "page": { "type": "number", "default": 1 }
+      "{paramName}": { "type": "string", "required": true, "source": "user_input" }
     },
-    "response": { "type": "json", "fields": ["id", "name", "price"] },
-    "boundTo": ["searchProducts"],
-    "discoveredAt": "2026-07-22"
+    "response": { "type": "json", "fields": ["{field1}", "{field2}"] },
+    "boundTo": ["{workflowName}"],
+    "discoveredAt": "{YYYY-MM-DD}"
   }
 }
 ```
 
+**Schema validation:**
 | Field | Required | Description |
 |-------|----------|-------------|
-| `method` | yes | GET, POST, PUT, DELETE |
-| `url` | yes | API endpoint |
-| `params` | no | Parameters with type, required, source |
-| `response.fields` | no | Key fields in response |
-| `boundTo` | yes | Links to workflow name |
-| `preconditions` | no | e.g. authenticated |
+| `description` | yes | One-liner |
+| `method` | yes | GET, POST, PUT, DELETE, PATCH |
+| `url` | yes | Full URL starting with https:// |
+| `params` | no | Object with param definitions |
+| `response.fields` | no | Array of field names |
+| `boundTo` | **yes** | Array of workflow names this API replaces |
+| `discoveredAt` | **yes** | Date in YYYY-MM-DD format |
+
+**Forbidden:** `endpoint`, `auth`, `request`, `response.context`, `name` at root level.

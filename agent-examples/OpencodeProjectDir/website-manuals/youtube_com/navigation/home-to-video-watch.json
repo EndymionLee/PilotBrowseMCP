@@ -1,0 +1,13 @@
+{
+  "home->video-watch": {
+    "from": "home",
+    "to": "video-watch",
+    "steps": [
+      { "action": "click", "page": "home", "target": "videoRecommendation" }
+    ],
+    "backMethods": [
+      { "action": "browser_back" },
+      { "action": "click", "page": "video-watch", "target": "youtubeLogo" }
+    ]
+  }
+}

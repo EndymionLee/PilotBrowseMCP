@@ -1,0 +1,31 @@
+name = "youtube comment bot"
+site = "youtube_com"
+
+# open video page
+open("https://www.youtube.com/watch?v=dQw4w9WgXcQ")
+wait_for_element("#comments", timeout=8000)
+
+# wait for comment section to fully load
+wait(2000)
+
+# type comment
+click("#comments")
+wait(500)
+type("#comment-input", "nice video!")
+
+# check captcha isn't blocking
+captcha = find("#captcha, .g-recaptcha")
+if captcha:
+    raise "captcha detected, cannot proceed"
+
+# submit
+click("#submit-button")
+
+# wait for API confirm
+result = wait_for("/youtubei/v1/comment", method="POST", timeout=10000)
+if result.status == 200:
+    take_screenshot()
+    save("comment_result.json", result.body)
+    print("comment posted")
+else:
+    raise "comment failed: " + result.status

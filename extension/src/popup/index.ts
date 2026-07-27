@@ -51,9 +51,8 @@ function applyI18n(): void {
     lblPermLoading: _('loading'),
     lblPick: _('sectionPick'),
     lblRec: _('sectionRec'),
-    lblTabs: _('sectionTabs'),
-    lblTabLoading: _('loading'),
     lblFooter: _('footer'),
+    lblScripts: _('sectionScripts'),
   };
   for (const [id, text] of Object.entries(map)) {
     const el = document.getElementById(id);
@@ -61,16 +60,12 @@ function applyI18n(): void {
   }
   const pickDesc = document.getElementById('pickDesc') as HTMLInputElement | null;
   if (pickDesc) pickDesc.placeholder = _('pickDescPlaceholder');
-  const wfDesc = document.getElementById('wfDesc') as HTMLTextAreaElement | null;
-  if (wfDesc) wfDesc.placeholder = _('wfDescPlaceholder');
   const pickBtn = document.getElementById('pickBtn');
   if (pickBtn) pickBtn.textContent = _('pickBtn');
+  const scriptAddEl = document.getElementById('scriptAddBtn');
+  if (scriptAddEl) scriptAddEl.textContent = _('scriptAddBtn');
   const pickSendBtn = document.getElementById('pickSendBtn');
   if (pickSendBtn) pickSendBtn.textContent = _('pickSendBtn');
-  const wfSaveBtn = document.getElementById('wfSaveBtn');
-  if (wfSaveBtn) wfSaveBtn.textContent = _('wfSaveBtn');
-  const refreshBtn = document.getElementById('refreshBtn');
-  if (refreshBtn) refreshBtn.title = _('refreshBtn');
   const themeBtn = document.getElementById('themeBtn');
   if (themeBtn) themeBtn.title = _('themeSwitch');
   const statusDetail = document.getElementById('statusDetail');
@@ -82,8 +77,6 @@ function applyI18n(): void {
   if (pickEl) pickEl.textContent = _('pickBtn');
   const sendEl = document.getElementById('pickSendBtn');
   if (sendEl) sendEl.textContent = _('pickSendBtn');
-  const saveEl = document.getElementById('wfSaveBtn');
-  if (saveEl) saveEl.textContent = _('wfSaveBtn');
 }
 
 type PermMeta = { label: string; desc: string; icon: string; iconClass: string };
@@ -109,15 +102,12 @@ document.getElementById('permHeader')?.addEventListener('click', () => {
   if (permVisible) updatePermissions();
 });
 const statusDot = $('statusDot'); const statusPulse = $('statusPulse'); const statusText = $('statusText');
-const tabsList = $('tabsList'); const permsList = $('permsList'); const refreshBtn = $('refreshBtn');
+const permsList = $('permsList');
 const themeBtn = $('themeBtn');
 const recBtn = $('recBtn'); const recDot = $('recDot'); const recStatus = $('recStatus');
 const recCount = $('recCount'); const recSteps = $('recSteps');
-const wfDesc = $('wfDesc') as HTMLTextAreaElement;
-const wfSaveBtn = $('wfSaveBtn'); const wfStatus = $('wfStatus');
 const pickBtn = $('pickBtn'); const pickResult = $('pickResult');
-const pickInfo = $('pickInfo'); const pickDesc = $('pickDesc') as HTMLInputElement;
-const pickSendBtn = $('pickSendBtn');
+const pickInfo = $('pickInfo');
 const langSelect = $('langSelect') as HTMLSelectElement;
 
 let updateTimer: ReturnType<typeof setInterval> | null = null;
@@ -212,20 +202,14 @@ async function checkPickResult(): Promise<void> {
       const el = data.pick_result;
       chrome.storage.local.remove(['pick_result', 'pick_time']);
       pickInfo.textContent = '<' + el.tag + '> ' + (el.selector || '') + (el.text ? ' "' + el.text.slice(0, 40) + '"' : '');
-      pickDesc.value = ''; pickResult.style.display = 'block';
-      pickResult.dataset.selector = el.selector || '';
+      pickResult.style.display = 'block';
+      // 自动保存
+      const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
+      const desc = el.tag + (el.selector ? ' ' + el.selector : '') + (el.text ? ' "' + el.text.slice(0, 40) + '"' : '');
+      bgSend({ type: 'save_element', description: desc, selector: el.selector || '', url: tabs[0]?.url || '' });
     }
   } catch {}
 }
-
-pickSendBtn.addEventListener('click', async () => {
-  const desc = pickDesc.value.trim();
-  if (!desc) return;
-  const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
-  const resp = await bgSend({ type: 'save_element', description: desc, selector: pickResult.dataset.selector, url: tabs[0]?.url || '' });
-  pickResult.style.display = 'none'; pickDesc.value = '';
-  if (resp?.message) pickDesc.placeholder = resp.message;
-});
 
 // ==== Recording ====
 recBtn.addEventListener('click', async () => {
@@ -247,51 +231,147 @@ recBtn.addEventListener('click', async () => {
     if (resp?.success) {
       recording = false; lastRecording = resp;
       recBtn.textContent = _('recBtn'); recBtn.className = 'rec-btn go';
-      recDot.className = 'rec-dot'; recStatus.textContent = _('recStopped');
+      recDot.className = 'rec-dot'; recStatus.textContent = '请让Agent接收';
       recCount.textContent = _('recStepCount').replace('$1', String(resp.steps?.length || 0));
       if (resp.steps?.length) {
-        recSteps.innerHTML = resp.steps.map((s: any) => '<div class="rec-step"><span class="s-type">' + s.type + '</span>' + (s.selector || s.value || '') + '</div>').join('');
+        // 提取域名用于显示
+        const siteDomain = resp.steps.find((s: any) => s.url)?.url || '';
+        const siteShort = (() => { try { return new URL(siteDomain).hostname.replace('www.', ''); } catch { return ''; } })();
+        recSteps.innerHTML = resp.steps.map((s: any) =>
+          '<div class="rec-step"><span class="s-type">' + s.type + '</span>' +
+          (s.selector || s.value || '') +
+          (s.url ? '<span style="font-size:9px;color:var(--text-muted);margin-left:6px;">' +
+            (() => { try { const u = new URL(s.url); return u.hostname.replace('www.', '') + (u.pathname !== '/' ? u.pathname.slice(0, 30) : ''); } catch { return ''; } })() + '</span>' : '') +
+          '</div>'
+        ).join('');
+        // 显示页面标识
+        if (siteShort) {
+          const paths = [...new Set(resp.steps.map((s: any) => { try { return new URL(s.url).pathname; } catch { return ''; } }).filter(Boolean))];
+          recCount.textContent = siteShort + (paths.length > 1 ? ' (' + paths.length + ' pages)' : (paths[0] && paths[0] !== '/' ? paths[0].slice(0, 25) : ''));
+        }
       }
+      // 自动保存录制
+      const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
+      bgSend({ type: 'save_workflow', description: 'Recording ' + Date.now(), url: tabs[0]?.url || '', steps: resp.steps || [] });
     }
   }
 });
 
-// ==== Workflow ====
-wfSaveBtn.addEventListener('click', async () => {
-  const description = wfDesc.value.trim();
-  if (!description) { wfStatus.textContent = _('wfNoDesc'); return; }
-  wfSaveBtn.disabled = true; wfStatus.textContent = _('wfSaving');
-  try {
-    const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
-    const resp = await bgSend({ type: 'save_workflow', description, url: tabs[0]?.url || '', steps: lastRecording?.steps || [] });
-    wfStatus.textContent = resp?.message || _('wfSaved'); wfDesc.value = ''; recSteps.innerHTML = '';
-    lastRecording = null; recCount.textContent = '';
-  } catch { wfStatus.textContent = _('wfFailed'); }
-  finally { wfSaveBtn.disabled = false; }
-});
+// ==== Script Library ====
+interface SavedScript { id: string; name: string; data: any; steps: number; addedAt: number; pinned?: boolean; pinnedAt?: number; }
+const SCRIPT_KEY = 'saved_scripts';
+const scriptAddBtn = $('scriptAddBtn');
+const scriptList = $('scriptList');
+const scriptMoreWrap = $('scriptMoreWrap');
+const scriptMoreBtn = $('scriptMoreBtn');
+const SHOW_COUNT = 5;
+let scriptRunners = new Map<string, boolean>();
+let scriptShowAll = false;
 
-// ==== Tabs ====
-async function updateTabs(): Promise<void> {
-  try {
-    const tabs = await chrome.tabs.query({});
-    const visible = tabs.filter((t) => t.id && t.url && !t.url.startsWith('chrome://'));
-    if (visible.length === 0) { tabsList.innerHTML = '<div class="tabs-empty"><div class="icon">▢</div><div>' + _('noTabs') + '</div></div>'; return; }
-    tabsList.innerHTML = visible.map((t) => {
-      const domain = (() => { try { return new URL(t.url!).hostname; } catch { return ''; } })();
-      return '<div class="tab-item ' + (t.active ? 'active' : '') + '" data-id="' + t.id + '"><div class="tab-favicon">' + ((t.title ?? '?').charAt(0).toUpperCase()) + '</div><div class="tab-info"><div class="title">' + (t.title || _('untitled')) + '</div><div class="url">' + t.url + '</div></div>' + (domain ? '<span class="tab-count">' + domain.replace(/^www\./, '') + '</span>' : '') + '</div>';
+async function loadScripts(): Promise<SavedScript[]> {
+  try { const r = await chrome.storage.local.get(SCRIPT_KEY); return r[SCRIPT_KEY] || []; } catch { return []; }
+}
+async function saveScripts(s: SavedScript[]): Promise<void> { await chrome.storage.local.set({ [SCRIPT_KEY]: s }); }
+
+scriptMoreBtn.addEventListener('click', () => { scriptShowAll = !scriptShowAll; renderScriptList(); });
+
+function renderScriptList() {
+  loadScripts().then((scripts) => {
+    // 置顶按置顶时间排，其余按添加时间倒序
+    const sorted = [...scripts].sort((a, b) => {
+      if (a.pinned && b.pinned) return (a.pinnedAt || 0) - (b.pinnedAt || 0);
+      if (a.pinned && !b.pinned) return -1;
+      if (!a.pinned && b.pinned) return 1;
+      return (b.addedAt || 0) - (a.addedAt || 0);
+    });
+    const showCount = scriptShowAll ? sorted.length : SHOW_COUNT;
+    const visible = sorted.slice(0, showCount);
+    if (sorted.length === 0) { scriptList.innerHTML = '<div class="tabs-empty"><div style="font-size:11px;">' + _('scriptNoScripts') + '</div></div>'; scriptMoreWrap.style.display = 'none'; return; }
+    scriptList.innerHTML = visible.map((s) => {
+      const running = scriptRunners.get(s.id) || false;
+      return '<div class="perm-item">' +
+        '<div class="perm-info" style="flex:1;min-width:0;"><div style="font-size:11px;font-weight:500;">' + s.name + '</div>' +
+        '<div style="font-size:10px;color:var(--text-muted);">' + (running ? _('scriptRunning') : _('scriptSteps').replace('$1', String(s.steps))) + '</div></div>' +
+        '<div style="display:flex;gap:2px;">' +
+        '<button class="btn-icon script-btn-run" data-id="' + s.id + '" style="font-size:11px;width:22px;height:22px;" title="Run">' + (running ? '&#x23F9;' : '&#x25B6;') + '</button>' +
+        '<button class="btn-icon script-btn-pin" data-id="' + s.id + '" style="font-size:11px;width:22px;height:22px;' + (s.pinned ? 'color:#FF9800;' : '') + '" title="' + (s.pinned ? 'Unpin' : 'Pin') + '">' + (s.pinned ? '&#x2605;' : '&#x2606;') + '</button>' +
+        '<button class="btn-icon script-btn-rename" data-id="' + s.id + '" style="font-size:11px;width:22px;height:22px;" title="Rename">&#x270E;</button>' +
+        '<button class="btn-icon script-btn-del" data-id="' + s.id + '" style="font-size:11px;width:22px;height:22px;color:var(--red);" title="Delete">&#x2715;</button>' +
+        '</div></div>';
     }).join('');
-    tabsList.querySelectorAll('.tab-item').forEach((el) => {
-      el.addEventListener('click', async () => {
-        const id = parseInt((el as HTMLElement).dataset.id ?? '0');
-        if (id) { await chrome.tabs.update(id, { active: true }); const tab = await chrome.tabs.get(id); await chrome.windows.update(tab.windowId!, { focused: true }); }
+    scriptMoreWrap.style.display = sorted.length > SHOW_COUNT ? '' : 'none';
+    scriptMoreBtn.textContent = scriptShowAll ? _('scriptShowLess') + ' (' + sorted.length + ')' : _('scriptShowAll') + ' (' + sorted.length + ')';
+    // 事件绑定
+    scriptList.querySelectorAll('.script-btn-run').forEach((el) => {
+      el.addEventListener('click', async (e) => {
+        e.stopPropagation();
+        const id = (el as HTMLElement).dataset.id || '';
+        if (scriptRunners.get(id)) { scriptRunners.set(id, false); renderScriptList(); return; }
+        const scripts = await loadScripts();
+        const s = scripts.find(x => x.id === id);
+        if (!s) return;
+        scriptRunners.set(id, true); renderScriptList();
+        await bgSend({ type: 'script_run', steps: s.data.steps });
+        scriptRunners.set(id, false); renderScriptList();
       });
     });
-  } catch { tabsList.innerHTML = '<div class="tabs-empty"><div class="icon">!</div><div>' + _('loadFailed') + '</div></div>'; }
+    scriptList.querySelectorAll('.script-btn-rename').forEach((el) => {
+      el.addEventListener('click', async (e) => {
+        e.stopPropagation();
+        const id = (el as HTMLElement).dataset.id || '';
+        const scripts = await loadScripts();
+        const s = scripts.find(x => x.id === id);
+        if (!s) return;
+        const name = prompt(_('scriptRename'), s.name);
+        if (name && name.trim()) { s.name = name.trim(); await saveScripts(scripts); renderScriptList(); }
+      });
+    });
+    scriptList.querySelectorAll('.script-btn-pin').forEach((el) => {
+      el.addEventListener('click', async (e) => {
+        e.stopPropagation();
+        const id = (el as HTMLElement).dataset.id || '';
+        const scripts = await loadScripts();
+        const s = scripts.find(x => x.id === id);
+        if (!s) return;
+        s.pinned = !s.pinned;
+        s.pinnedAt = s.pinned ? Date.now() : undefined;
+        await saveScripts(scripts);
+        renderScriptList();
+      });
+    });
+    scriptList.querySelectorAll('.script-btn-del').forEach((el) => {
+      el.addEventListener('click', async (e) => {
+        e.stopPropagation();
+        const id = (el as HTMLElement).dataset.id || '';
+        await saveScripts((await loadScripts()).filter(x => x.id !== id));
+        renderScriptList();
+      });
+    });
+  });
 }
+
+scriptAddBtn.addEventListener('click', () => {
+  const input = document.createElement('input');
+  input.type = 'file'; input.accept = '.json';
+  input.onchange = async () => {
+    const file = input.files?.[0]; if (!file) return;
+    try {
+      const text = await file.text();
+      const data = JSON.parse(text);
+      if (!data.steps || !Array.isArray(data.steps)) return;
+      const scripts = await loadScripts();
+      scripts.push({ id: Date.now().toString(36), name: file.name.replace(/\.json$/, ''), data, steps: data.steps.length, addedAt: Date.now() });
+      await saveScripts(scripts);
+      renderScriptList();
+    } catch {}
+  };
+  input.click();
+});
 
 // ==== Init ====
 async function init(): Promise<void> {
   applyI18n();
+  renderScriptList();
   try { const resp = await bgSend({ type: 'ping' }); updateStatus(resp?.status === 'connected'); } catch { updateStatus(false); }
   try {
     const resp = await bgSend({ type: 'recording_status' });
@@ -301,10 +381,8 @@ async function init(): Promise<void> {
       recDot.className = 'rec-dot on'; recStatus.textContent = _('recRecording');
     }
   } catch {}
-  await Promise.all([updatePermissions(), updateTabs(), checkPickResult()]);
+  await Promise.all([updatePermissions(), checkPickResult()]);
 }
-
-refreshBtn.addEventListener('click', updateTabs);
 
 const LANG = await getSavedLang();
 currentLang = LANG;

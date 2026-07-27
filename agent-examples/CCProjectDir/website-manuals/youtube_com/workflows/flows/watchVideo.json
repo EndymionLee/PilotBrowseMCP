@@ -1,0 +1,9 @@
+{
+  "watchVideo": {
+    "description": "Watch a YouTube video by clicking on a video recommendation",
+    "startsOn": "home",
+    "steps": [
+      { "action": "click", "target": "videoRecommendation" }
+    ]
+  }
+}

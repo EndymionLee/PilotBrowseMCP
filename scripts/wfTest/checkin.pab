@@ -1,0 +1,20 @@
+name = "pixiv daily checkin"
+
+# open browser
+tab = open("https://www.pixiv.net", active=false)
+
+# wait for page load
+wait(3000)
+
+# try check-in up to 3 times
+for i in range(3):
+    click(".checkin-btn")
+    result = wait_for("/api/checkin", timeout=10000)
+    if result.success:
+        take_screenshot()
+        save("checkin_result.json", result.body)
+        print("checkin success")
+        break
+    wait(2000)
+else:
+    raise "checkin failed after 3 tries"

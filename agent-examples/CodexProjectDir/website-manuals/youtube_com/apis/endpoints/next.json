@@ -1,0 +1,16 @@
+{
+  "getWatchNext": {
+    "description": "Get watch page data including related videos, comments, video metadata, and primary/secondary info",
+    "method": "POST",
+    "url": "https://www.youtube.com/youtubei/v1/next?prettyPrint=false",
+    "params": {
+      "videoId": { "type": "string", "required": true, "source": "url_param" }
+    },
+    "response": {
+      "type": "json",
+      "fields": ["contents.twoColumnWatchNextResults.results", "contents.twoColumnWatchNextResults.secondaryResults"]
+    },
+    "boundTo": ["watchVideo"],
+    "discoveredAt": "2026-07-26"
+  }
+}

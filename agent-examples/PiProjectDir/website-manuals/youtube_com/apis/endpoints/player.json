@@ -1,0 +1,16 @@
+{
+  "getVideoPlayer": {
+    "description": "Get video player data including streaming URLs, captions, and video details",
+    "method": "POST",
+    "url": "https://www.youtube.com/youtubei/v1/player?prettyPrint=false",
+    "params": {
+      "videoId": { "type": "string", "required": true, "source": "url_param" }
+    },
+    "response": {
+      "type": "json",
+      "fields": ["playabilityStatus", "streamingData", "captions", "videoDetails", "playbackTracking"]
+    },
+    "boundTo": ["watchVideo"],
+    "discoveredAt": "2026-07-26"
+  }
+}

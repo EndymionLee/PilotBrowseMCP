@@ -440,6 +440,87 @@ function getLocalStorage(keys?: string[]): { items: Record<string, string | null
 }
 
 // === 拾取（指给 Agent 看：这个元素是什么）=====
+// === 录制功能 ======
+let recActive = false;
+let recSteps: any[] = [];
+
+function recGenSel(el: any): string {
+  if (!el || !el.tagName) return '';
+  if (el.id) return '#' + el.id;
+  let sel = el.tagName.toLowerCase();
+  if (el.className && typeof el.className === 'string') {
+    const cls = el.className.trim().split(/\s+/).slice(0, 2).join('.');
+    if (cls) sel += '.' + cls;
+  }
+  return sel;
+}
+
+function recDedup(type: string, sel: string): boolean {
+  if (recSteps.length === 0) return false;
+  const last = recSteps[recSteps.length - 1];
+  return last.type === type && last.selector === sel && (Date.now() - last.timestamp) < 600;
+}
+
+function recInit() {
+  // 先移除旧监听器，避免重复添加导致每步记录两次
+  document.removeEventListener('click', recOnClick, true);
+  document.removeEventListener('change', recOnChange, true);
+  recActive = true;
+  // 通知 background 更新 badge
+  chrome.runtime.sendMessage({ source: 'browser-mcp-content', type: 'recording_active', stepCount: recSteps.length }).catch(() => {});
+  // 事件监听
+  document.addEventListener('click', recOnClick, true);
+  document.addEventListener('change', recOnChange, true);
+}
+
+function recFlash(el: HTMLElement) {
+  const origOutline = el.style.outline;
+  const origBg = el.style.backgroundColor;
+  el.style.outline = '3px solid #ff3300';
+  el.style.outlineOffset = '2px';
+  el.style.backgroundColor = 'rgba(255,51,0,0.12)';
+  setTimeout(() => {
+    el.style.outline = origOutline;
+    el.style.outlineOffset = '';
+    el.style.backgroundColor = origBg;
+  }, 600);
+}
+
+function recOnClick(e: MouseEvent) {
+  if (!recActive) return;
+  const el = e.target as HTMLElement;
+  const sel = recGenSel(el);
+  if (recDedup('click', sel)) return;
+  recSteps.push({
+    type: 'click', selector: sel, text: el.textContent?.trim().slice(0, 80),
+    url: location.href, timestamp: Date.now(),
+  });
+  recFlash(el);
+  chrome.runtime.sendMessage({ source: 'browser-mcp-content', type: 'recording_active', stepCount: recSteps.length }).catch(() => {});
+}
+
+function recOnChange(e: Event) {
+  if (!recActive) return;
+  const el = e.target as HTMLInputElement;
+  const sel = recGenSel(el);
+  if (recDedup('type', sel)) return;
+  recSteps.push({
+    type: 'type', selector: sel, value: el.value?.slice(0, 200),
+    url: location.href, timestamp: Date.now(),
+  });
+  recFlash(el);
+  chrome.runtime.sendMessage({ source: 'browser-mcp-content', type: 'recording_active', stepCount: recSteps.length }).catch(() => {});
+}
+
+function recStop(): any[] {
+  recActive = false;
+  const steps = [...recSteps];
+  recSteps = [];
+  document.removeEventListener('click', recOnClick, true);
+  document.removeEventListener('change', recOnChange, true);
+  return steps;
+}
+
 // === 消息监听 ======
 chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
   if (message.source !== 'browser-mcp-bg') return;
@@ -636,20 +717,30 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
         break;
       }
 
-      // 录制（捕获操作示例供 Agent 参考）
+      // ping（检查 content script 是否加载）
+      case 'ping': {
+        sendResponse({ pong: true });
+        break;
+      }
+
+      // 录制
       case 'recording_start': {
-        startRecording();
-        sendResponse({ success: true });
+        try {
+          recInit();
+          sendResponse({ success: true });
+        } catch (err) {
+          sendResponse({ error: (err as Error).message });
+        }
         break;
       }
 
       case 'recording_stop': {
-        const steps = stopRecording();
-        const key = params._responseKey as string;
-        if (key) {
-          chrome.storage.session.set({ [key]: { steps, url: location.href, title: document.title } }).catch(() => {});
+        try {
+          const steps = recStop();
+          sendResponse({ success: true, steps, stepCount: steps.length });
+        } catch (err) {
+          sendResponse({ error: (err as Error).message });
         }
-        sendResponse({ success: true, stepCount: steps.length });
         break;
       }
 
@@ -661,10 +752,17 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
   }
 });
 
-// 通知 background 脚本已就绪
+// 通知 background 脚本已就绪，同时检查是否需要录制
 chrome.runtime.sendMessage({
   source: 'browser-mcp-content',
   type: 'content_script_ready',
+}).catch(() => {});
+
+// 页面跳转后检查是否正在录制
+chrome.runtime.sendMessage({
+  source: 'browser-mcp-content',
+  type: 'recording_check',
+  tabId: -1, // background 会通过 sender.tab.id 获取
 }).catch(() => {});
 
 console.log('[Content] Pilot Browse MCP 已注入');

@@ -1,6 +1,6 @@
 {
   "appName": { "message": "Pilot Browse MCP" },
-  "appVersion": { "message": "v0.2" },
+  "appVersion": { "message": "v0.3" },
 
   "connected": { "message": "已连接" },
   "disconnected": { "message": "未连接" },
@@ -19,13 +19,13 @@
   "noPermissions": { "message": "无权限项" },
   "permissionsFailed": { "message": "获取失败" },
 
-  "pickBtn": { "message": "拾取" },
+  "pickBtn": { "message": "标记" },
   "pickBtnWaiting": { "message": "点页面..." },
   "pickInfo": { "message": "请点击页面上的元素" },
   "pickDescPlaceholder": { "message": "这是干什么的？" },
   "pickSendBtn": { "message": "发给 Agent" },
   "pickSent": { "message": "已发送" },
-  "sectionPick": { "message": "标记元素" },
+  "sectionPick": { "message": "标记" },
   "pickEsc": { "message": "Esc 取消" },
 
   "recBtn": { "message": "录制" },
@@ -35,7 +35,7 @@
   "recStopped": { "message": "已停止" },
   "recStepCount": { "message": "$1 步" },
   "recNoSteps": { "message": "未录到操作" },
-  "sectionRec": { "message": "录制工作流" },
+  "sectionRec": { "message": "录制" },
 
   "wfDescPlaceholder": { "message": "工作流描述" },
   "wfSaveBtn": { "message": "发给 Agent" },
@@ -57,5 +57,13 @@
   "resetRetry": { "message": "已重置，再点一次" },
 
   "themeSwitch": { "message": "Toggle theme" },
+  "sectionScripts": { "message": "脚本" },
+  "scriptAddBtn": { "message": "添加" },
+  "scriptShowAll": { "message": "全部显示" },
+  "scriptNoScripts": { "message": "暂无脚本，点击添加" },
+  "scriptRunning": { "message": "运行中..." },
+  "scriptSteps": { "message": "$1 步" },
+  "scriptShowLess": { "message": "收起" },
+  "scriptRename": { "message": "重命名:" },
   "footer": { "message": "Agent Browser Runtime  ·  MCP" }
 }

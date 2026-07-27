@@ -25,6 +25,10 @@ description: 通过用户行为发现网站能力，学习 API 并沉淀自动�
 | 5. 进化 | [evolution.md](evolution.md) | 每次执行优化实现 |
 | 6. 批量任务 | [batch-tasks.md](batch-tasks.md) | Python 脚本处理批量场景 |
 
+## 校验
+
+保存手册文件前，调 `workflow_validate_manual` 检查格式。详见 [manual-schema.md](manual-schema.md)。
+
 ## 输出目录
 
 ```

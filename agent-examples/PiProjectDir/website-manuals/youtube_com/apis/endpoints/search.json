@@ -1,0 +1,16 @@
+{
+  "searchVideos": {
+    "description": "Search YouTube videos by query (uses page navigation, API via youtubei/v1/search)",
+    "method": "GET",
+    "url": "https://www.youtube.com/results?search_query=___query___",
+    "params": {
+      "search_query": { "type": "string", "required": true, "source": "user_input" }
+    },
+    "response": {
+      "type": "html",
+      "fields": ["search results page"]
+    },
+    "boundTo": ["searchVideos"],
+    "discoveredAt": "2026-07-26"
+  }
+}

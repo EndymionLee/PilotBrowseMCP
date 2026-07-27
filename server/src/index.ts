@@ -36,7 +36,7 @@ async function main(): Promise<void> {
 
     const recording = { name: safeName, description, url, title, site: siteDir, steps: steps ?? [], recordedAt: new Date().toISOString() };
 
-    const recordingsDir = path.resolve('recordings');
+    const recordingsDir = path.resolve('.learn', 'recordings');
     await fs.mkdir(recordingsDir, { recursive: true });
     await fs.writeFile(path.join(recordingsDir, `${safeName}.json`), JSON.stringify(recording, null, 2), 'utf-8');
     logger.info('Workflow', '收到录制', { name: safeName, site: siteDir, steps: steps?.length ?? 0 });
@@ -51,7 +51,7 @@ async function main(): Promise<void> {
     try { if (url) siteDir = new URL(url).hostname.replace(/^www\./, '').split('.')[0]; } catch {}
 
     const safeName = description.replace(/[^a-zA-Z0-9一-龥_-]/g, '_').slice(0, 40);
-    const elDir = path.resolve('picked-elements');
+    const elDir = path.resolve('.learn', 'picked-elements');
     await fs.mkdir(elDir, { recursive: true });
     await fs.writeFile(path.join(elDir, `${safeName}.json`), JSON.stringify({
       description, selector, text, ariaLabel, placeholder, site: siteDir, url, pickedAt: new Date().toISOString(),

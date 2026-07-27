@@ -1,6 +1,6 @@
 {
   "appName": { "message": "Pilot Browse MCP" },
-  "appVersion": { "message": "v0.2" },
+  "appVersion": { "message": "v0.3" },
 
   "connected": { "message": "接続済み" },
   "disconnected": { "message": "未接続" },
@@ -19,13 +19,13 @@
   "noPermissions": { "message": "項目なし" },
   "permissionsFailed": { "message": "読み込み失敗" },
 
-  "pickBtn": { "message": "選択" },
+  "pickBtn": { "message": "マーク" },
   "pickBtnWaiting": { "message": "ページをクリック..." },
   "pickInfo": { "message": "ページ上の要素をクリックしてください" },
   "pickDescPlaceholder": { "message": "この要素は何ですか？" },
   "pickSendBtn": { "message": "エージェントに送信" },
   "pickSent": { "message": "送信済み" },
-  "sectionPick": { "message": "要素をマーク" },
+  "sectionPick": { "message": "マーク" },
   "pickEsc": { "message": "Escでキャンセル" },
 
   "recBtn": { "message": "録画" },
@@ -35,7 +35,7 @@
   "recStopped": { "message": "停止済み" },
   "recStepCount": { "message": "$1 ステップ" },
   "recNoSteps": { "message": "録画したステップなし" },
-  "sectionRec": { "message": "ワークフロー録画" },
+  "sectionRec": { "message": "録画" },
 
   "wfDescPlaceholder": { "message": "ワークフローの説明" },
   "wfSaveBtn": { "message": "エージェントに送信" },
@@ -57,5 +57,13 @@
   "resetRetry": { "message": "リセットされました、再試行" },
 
   "themeSwitch": { "message": "Toggle theme" },
+  "sectionScripts": { "message": "スクリプト" },
+  "scriptAddBtn": { "message": "追加" },
+  "scriptShowAll": { "message": "すべて表示" },
+  "scriptNoScripts": { "message": "スクリプトなし。追加" },
+  "scriptRunning": { "message": "実行中..." },
+  "scriptSteps": { "message": "$1 ステップ" },
+  "scriptShowLess": { "message": "折りたたむ" },
+  "scriptRename": { "message": "名前変更:" },
   "footer": { "message": "Agent Browser Runtime  ·  MCP" }
 }

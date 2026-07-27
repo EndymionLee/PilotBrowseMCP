@@ -1,0 +1,9 @@
+{
+  "subscribeChannel": {
+    "description": "Subscribe to the current video's channel",
+    "startsOn": "video-watch",
+    "steps": [
+      { "action": "click", "target": "subscribeButton" }
+    ]
+  }
+}

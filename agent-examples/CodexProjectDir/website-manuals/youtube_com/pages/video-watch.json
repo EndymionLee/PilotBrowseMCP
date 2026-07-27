@@ -1,0 +1,227 @@
+{
+  "searchInput": {
+    "locator": {
+      "type": "css",
+      "selector": "input[name=\"search_query\"]",
+      "altSelectors": ["input.ytSearchboxComponentInput", "input[placeholder=\"搜索\"]"]
+    },
+    "capabilities": ["type", "input", "focus"],
+    "interaction": { "action": "type", "method": "dom" }
+  },
+  "searchButton": {
+    "locator": {
+      "type": "css",
+      "selector": "button[aria-label=\"搜索\"]",
+      "altSelectors": ["button.ytSearchboxComponentSearchButton", "button[title=\"搜索\"]"]
+    },
+    "capabilities": ["click"],
+    "interaction": { "action": "click", "method": "dom" }
+  },
+  "voiceSearchButton": {
+    "locator": {
+      "type": "css",
+      "selector": "button[aria-label=\"通过语音搜索内容\"]",
+      "altSelectors": ["button[title=\"通过语音搜索内容\"]"]
+    },
+    "capabilities": ["click"],
+    "interaction": { "action": "click", "method": "dom" }
+  },
+  "youtubeLogo": {
+    "locator": {
+      "type": "css",
+      "selector": "a#logo[title=\"YouTube 首页\"]",
+      "altSelectors": ["a#logo[href=\"/\"]"]
+    },
+    "capabilities": ["click"],
+    "interaction": { "action": "click", "method": "dom" }
+  },
+  "createButton": {
+    "locator": {
+      "type": "css",
+      "selector": "button[aria-label=\"创建\"]",
+      "altSelectors": ["button[title=\"创建\"]"]
+    },
+    "capabilities": ["click"],
+    "interaction": { "action": "click", "method": "dom" }
+  },
+  "notificationsButton": {
+    "locator": {
+      "type": "css",
+      "selector": "button[aria-label=\"通知\"]",
+      "altSelectors": ["button#button[aria-label=\"通知\"]"]
+    },
+    "capabilities": ["click"],
+    "interaction": { "action": "click", "method": "dom" }
+  },
+  "accountMenu": {
+    "locator": {
+      "type": "css",
+      "selector": "button#avatar-btn",
+      "altSelectors": ["button[aria-label=\"账号菜单\"]"]
+    },
+    "capabilities": ["click"],
+    "interaction": { "action": "click", "method": "dom" }
+  },
+  "homeLink": {
+    "locator": {
+      "type": "css",
+      "selector": "a#endpoint[aria-label=\"首页\"]",
+      "altSelectors": ["a[href=\"/\"][aria-label=\"首页\"]"]
+    },
+    "capabilities": ["click"],
+    "interaction": { "action": "click", "method": "dom" }
+  },
+  "shortsLink": {
+    "locator": {
+      "type": "css",
+      "selector": "a#endpoint[aria-label=\"Shorts\"]",
+      "altSelectors": ["a[href=\"/shorts/\"]"]
+    },
+    "capabilities": ["click"],
+    "interaction": { "action": "click", "method": "dom" }
+  },
+  "subscriptionsLink": {
+    "locator": {
+      "type": "css",
+      "selector": "a#endpoint[aria-label=\"订阅\"]",
+      "altSelectors": ["a[href=\"/feed/subscriptions\"]"]
+    },
+    "capabilities": ["click"],
+    "interaction": { "action": "click", "method": "dom" }
+  },
+  "youLink": {
+    "locator": {
+      "type": "css",
+      "selector": "a#endpoint[aria-label=\"我\"]",
+      "altSelectors": ["a[href=\"/feed/you\"]"]
+    },
+    "capabilities": ["click"],
+    "interaction": { "action": "click", "method": "dom" }
+  },
+  "filterChips": {
+    "locator": {
+      "type": "css",
+      "selector": "button.ytChipShapeButtonReset[role=\"tab\"]",
+      "altSelectors": ["button[role=\"tab\"]"]
+    },
+    "capabilities": ["click"],
+    "interaction": { "action": "click", "method": "dom" }
+  },
+  "videoTitle": {
+    "locator": {
+      "type": "css",
+      "selector": "h1.style-scope.ytd-watch-metadata",
+      "altSelectors": ["h1.title.style-scope.ytd-video-primary-info-renderer"]
+    },
+    "capabilities": ["read"],
+    "interaction": { "action": "read", "method": "dom" }
+  },
+  "channelLink": {
+    "locator": {
+      "type": "css",
+      "selector": "a.ytAttributedStringLink[href^=\"/@\"]",
+      "altSelectors": ["a.ytAttributedStringLink"]
+    },
+    "capabilities": ["click"],
+    "interaction": { "action": "click", "method": "dom" }
+  },
+  "subscribeButton": {
+    "locator": {
+      "type": "css",
+      "selector": "button[aria-label^=\"订阅\"]",
+      "altSelectors": ["ytd-subscribe-button-renderer button"]
+    },
+    "capabilities": ["click"],
+    "interaction": { "action": "click", "method": "dom" }
+  },
+  "likeButton": {
+    "locator": {
+      "type": "css",
+      "selector": "button[aria-label^=\"赞\"]",
+      "altSelectors": ["ytd-segmented-like-dislike-button-renderer button[aria-pressed]"]
+    },
+    "capabilities": ["click"],
+    "interaction": { "action": "click", "method": "dom" }
+  },
+  "shareButton": {
+    "locator": {
+      "type": "css",
+      "selector": "button[aria-label=\"分享\"]",
+      "altSelectors": ["ytd-button-renderer[aria-label=\"分享\"] button"]
+    },
+    "capabilities": ["click"],
+    "interaction": { "action": "click", "method": "dom" }
+  },
+  "saveButton": {
+    "locator": {
+      "type": "css",
+      "selector": "button[aria-label=\"保存\"]",
+      "altSelectors": ["button[aria-label=\"下载\"]"]
+    },
+    "capabilities": ["click"],
+    "interaction": { "action": "click", "method": "dom" }
+  },
+  "moreOptionsButton": {
+    "locator": {
+      "type": "css",
+      "selector": "button[aria-label=\"其他操作\"]",
+      "altSelectors": ["ytd-menu-renderer button[aria-label=\"其他操作\"]"]
+    },
+    "capabilities": ["click"],
+    "interaction": { "action": "click", "method": "dom" }
+  },
+  "descriptionToggle": {
+    "locator": {
+      "type": "css",
+      "selector": "ytd-video-secondary-info-renderer #description",
+      "altSelectors": ["#description yt-formatted-string"]
+    },
+    "capabilities": ["click", "read"],
+    "interaction": { "action": "click", "method": "dom" }
+  },
+  "commentsSection": {
+    "locator": {
+      "type": "css",
+      "selector": "ytd-comments#comments",
+      "altSelectors": ["#comments"]
+    },
+    "capabilities": ["read", "scroll"],
+    "interaction": { "action": "scroll", "method": "dom" }
+  },
+  "commentSortButton": {
+    "locator": {
+      "type": "css",
+      "selector": "ytd-comment-simplebox-renderer",
+      "altSelectors": ["#comments ytd-comment-simplebox-renderer"]
+    },
+    "capabilities": ["click"],
+    "interaction": { "action": "click", "method": "dom" }
+  },
+  "relatedVideoCard": {
+    "locator": {
+      "type": "css",
+      "selector": "a.ytLockupMetadataViewModelTitle",
+      "altSelectors": ["a.ytLockupViewModelContentImage"]
+    },
+    "capabilities": ["click"],
+    "interaction": { "action": "click", "method": "dom" }
+  },
+  "videoPlayer": {
+    "locator": {
+      "type": "css",
+      "selector": "video.video-stream",
+      "altSelectors": [".html5-main-video"]
+    },
+    "capabilities": ["click"],
+    "interaction": { "action": "click", "method": "dom" }
+  },
+  "shortsCard": {
+    "locator": {
+      "type": "css",
+      "selector": "a.shortsLockupViewModelHostEndpoint",
+      "altSelectors": ["a.reel-item-endpoint"]
+    },
+    "capabilities": ["click"],
+    "interaction": { "action": "click", "method": "dom" }
+  }
+}

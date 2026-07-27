@@ -1,6 +1,6 @@
 {
   "appName": { "message": "Pilot Browse MCP" },
-  "appVersion": { "message": "v0.2" },
+  "appVersion": { "message": "v0.3" },
 
   "connected": { "message": "연결됨" },
   "disconnected": { "message": "연결 끊김" },
@@ -19,13 +19,13 @@
   "noPermissions": { "message": "항목 없음" },
   "permissionsFailed": { "message": "불러오기 실패" },
 
-  "pickBtn": { "message": "선택" },
+  "pickBtn": { "message": "표시" },
   "pickBtnWaiting": { "message": "페이지 클릭..." },
   "pickInfo": { "message": "페이지에서 요소를 클릭하세요" },
   "pickDescPlaceholder": { "message": "이 요소는 무엇인가요?" },
   "pickSendBtn": { "message": "에이전트에게 보내기" },
   "pickSent": { "message": "전송됨" },
-  "sectionPick": { "message": "요소 표시" },
+  "sectionPick": { "message": "표시" },
   "pickEsc": { "message": "Esc 취소" },
 
   "recBtn": { "message": "녹화" },
@@ -35,7 +35,7 @@
   "recStopped": { "message": "중지됨" },
   "recStepCount": { "message": "$1 단계" },
   "recNoSteps": { "message": "녹화된 단계 없음" },
-  "sectionRec": { "message": "워크플로우 녹화" },
+  "sectionRec": { "message": "녹화" },
 
   "wfDescPlaceholder": { "message": "워크플로우 설명" },
   "wfSaveBtn": { "message": "에이전트에게 보내기" },
@@ -57,5 +57,13 @@
   "resetRetry": { "message": "초기화됨, 다시 시도" },
 
   "themeSwitch": { "message": "Toggle theme" },
+  "sectionScripts": { "message": "스크립트" },
+  "scriptAddBtn": { "message": "추가" },
+  "scriptShowAll": { "message": "모두 보기" },
+  "scriptNoScripts": { "message": "스크립트 없음. 추가" },
+  "scriptRunning": { "message": "실행 중..." },
+  "scriptSteps": { "message": "$1 단계" },
+  "scriptShowLess": { "message": "접기" },
+  "scriptRename": { "message": "이름 변경:" },
   "footer": { "message": "Agent Browser Runtime  ·  MCP" }
 }

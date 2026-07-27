@@ -1,6 +1,6 @@
 {
   "appName": { "message": "Pilot Browse MCP" },
-  "appVersion": { "message": "v0.2" },
+  "appVersion": { "message": "v0.3" },
 
   "connected": { "message": "Connected" },
   "disconnected": { "message": "Disconnected" },
@@ -19,13 +19,13 @@
   "noPermissions": { "message": "No items" },
   "permissionsFailed": { "message": "Failed to load" },
 
-  "pickBtn": { "message": "Pick" },
+  "pickBtn": { "message": "Mark" },
   "pickBtnWaiting": { "message": "Point..." },
   "pickInfo": { "message": "Click an element on the page" },
   "pickDescPlaceholder": { "message": "What is this element for?" },
   "pickSendBtn": { "message": "Send to Agent" },
   "pickSent": { "message": "Sent" },
-  "sectionPick": { "message": "Mark Element" },
+  "sectionPick": { "message": "Mark" },
   "pickEsc": { "message": "Esc to cancel" },
 
   "recBtn": { "message": "Record" },
@@ -35,7 +35,7 @@
   "recStopped": { "message": "Stopped" },
   "recStepCount": { "message": "$1 steps" },
   "recNoSteps": { "message": "No steps recorded" },
-  "sectionRec": { "message": "Record Workflow" },
+  "sectionRec": { "message": "Record" },
 
   "wfDescPlaceholder": { "message": "Workflow description" },
   "wfSaveBtn": { "message": "Send to Agent" },
@@ -57,5 +57,13 @@
   "resetRetry": { "message": "State reset, try again" },
 
   "themeSwitch": { "message": "Toggle theme" },
+  "sectionScripts": { "message": "Scripts" },
+  "scriptAddBtn": { "message": "Add" },
+  "scriptShowAll": { "message": "Show all" },
+  "scriptNoScripts": { "message": "No scripts. Click Add." },
+  "scriptRunning": { "message": "Running..." },
+  "scriptSteps": { "message": "$1 steps" },
+  "scriptShowLess": { "message": "Show less" },
+  "scriptRename": { "message": "Rename:" },
   "footer": { "message": "Agent Browser Runtime  ·  MCP" }
 }

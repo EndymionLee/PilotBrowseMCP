@@ -43,7 +43,7 @@ API and workflow are implementations of the same capability. When API works, it'
 
 ## User Recordings
 
-When the user says "sent you", "check it", or similar:
+Recordings and marks are auto-saved from the popup. When the user says "done", "check it", or similar:
 
 - `workflow_list_elements` -- view marked elements
 - `workflow_list_recordings` -- view recorded workflows

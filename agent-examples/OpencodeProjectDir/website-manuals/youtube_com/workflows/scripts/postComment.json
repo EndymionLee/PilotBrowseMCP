@@ -1,0 +1,16 @@
+{
+  "name": "postComment",
+  "description": "Post a comment on a YouTube video. Navigates from home page, clicks first video, then posts the comment.",
+  "steps": [
+    { "method": "browser_open", "params": { "url": "https://www.youtube.com/" } },
+    { "method": "browser_wait", "params": { "ms": 3000 } },
+    { "method": "browser_click", "params": { "selector": "a.ytLockupViewModelContentImage" } },
+    { "method": "browser_wait", "params": { "ms": 3000 } },
+    { "method": "browser_scroll", "params": { "y": 600 } },
+    { "method": "browser_wait", "params": { "ms": 1000 } },
+    { "method": "browser_click", "params": { "selector": "#simplebox-placeholder" } },
+    { "method": "browser_wait", "params": { "ms": 1500 } },
+    { "method": "browser_type", "params": { "selector": "#contenteditable-root", "text": "Hello World!" } },
+    { "method": "browser_click", "params": { "selector": "#submit-button > yt-button-shape > button" } }
+  ]
+}

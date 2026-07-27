@@ -1,0 +1,151 @@
+{
+  "searchInput": {
+    "locator": {
+      "type": "css",
+      "selector": "input[name=\"search_query\"]",
+      "altSelectors": ["input.ytSearchboxComponentInput", "input[placeholder=\"搜索\"]"]
+    },
+    "capabilities": ["type", "input", "focus"],
+    "interaction": { "action": "type", "method": "dom" }
+  },
+  "searchButton": {
+    "locator": {
+      "type": "css",
+      "selector": "button[aria-label=\"搜索\"]",
+      "altSelectors": ["button.ytSearchboxComponentSearchButton", "button[title=\"搜索\"]"]
+    },
+    "capabilities": ["click"],
+    "interaction": { "action": "click", "method": "dom" }
+  },
+  "voiceSearchButton": {
+    "locator": {
+      "type": "css",
+      "selector": "button[aria-label=\"通过语音搜索内容\"]"
+    },
+    "capabilities": ["click"],
+    "interaction": { "action": "click", "method": "dom" }
+  },
+  "youtubeLogo": {
+    "locator": {
+      "type": "css",
+      "selector": "a#logo[title=\"YouTube 首页\"]"
+    },
+    "capabilities": ["click"],
+    "interaction": { "action": "click", "method": "dom" }
+  },
+  "createButton": {
+    "locator": {
+      "type": "css",
+      "selector": "button[aria-label=\"创建\"]"
+    },
+    "capabilities": ["click"],
+    "interaction": { "action": "click", "method": "dom" }
+  },
+  "notificationsButton": {
+    "locator": {
+      "type": "css",
+      "selector": "button[aria-label=\"通知\"]"
+    },
+    "capabilities": ["click"],
+    "interaction": { "action": "click", "method": "dom" }
+  },
+  "accountMenu": {
+    "locator": {
+      "type": "css",
+      "selector": "button#avatar-btn"
+    },
+    "capabilities": ["click"],
+    "interaction": { "action": "click", "method": "dom" }
+  },
+  "homeLink": {
+    "locator": {
+      "type": "css",
+      "selector": "a#endpoint[aria-label=\"首页\"]"
+    },
+    "capabilities": ["click"],
+    "interaction": { "action": "click", "method": "dom" }
+  },
+  "shortsLink": {
+    "locator": {
+      "type": "css",
+      "selector": "a#endpoint[aria-label=\"Shorts\"]"
+    },
+    "capabilities": ["click"],
+    "interaction": { "action": "click", "method": "dom" }
+  },
+  "subscriptionsLink": {
+    "locator": {
+      "type": "css",
+      "selector": "a#endpoint[aria-label=\"订阅\"]"
+    },
+    "capabilities": ["click"],
+    "interaction": { "action": "click", "method": "dom" }
+  },
+  "youLink": {
+    "locator": {
+      "type": "css",
+      "selector": "a#endpoint[aria-label=\"我\"]"
+    },
+    "capabilities": ["click"],
+    "interaction": { "action": "click", "method": "dom" }
+  },
+  "filterChips": {
+    "locator": {
+      "type": "css",
+      "selector": "button.ytChipShapeButtonReset[role=\"tab\"]"
+    },
+    "capabilities": ["click"],
+    "interaction": { "action": "click", "method": "dom" }
+  },
+  "videoRecommendation": {
+    "locator": {
+      "type": "css",
+      "selector": "a.ytLockupViewModelContentImage",
+      "altSelectors": ["a.ytLockupMetadataViewModelTitle"]
+    },
+    "capabilities": ["click"],
+    "interaction": { "action": "click", "method": "dom" }
+  },
+  "shortsCard": {
+    "locator": {
+      "type": "css",
+      "selector": "a.shortsLockupViewModelHostEndpoint"
+    },
+    "capabilities": ["click"],
+    "interaction": { "action": "click", "method": "dom" }
+  },
+  "channelAvatarLink": {
+    "locator": {
+      "type": "css",
+      "selector": "div.ytSpecAvatarShapeButton[aria-label^=\"前往频道\"]",
+      "altSelectors": ["div[aria-label^=\"前往频道\"]"]
+    },
+    "capabilities": ["click"],
+    "interaction": { "action": "click", "method": "dom" }
+  },
+  "channelNameLink": {
+    "locator": {
+      "type": "css",
+      "selector": "a.ytAttributedStringLink[href^=\"/@\"]"
+    },
+    "capabilities": ["click"],
+    "interaction": { "action": "click", "method": "dom" }
+  },
+  "expandButton": {
+    "locator": {
+      "type": "css",
+      "selector": "button[aria-label=\"展开\"]",
+      "altSelectors": ["button[aria-label=\"收起\"]"]
+    },
+    "capabilities": ["click"],
+    "interaction": { "action": "click", "method": "dom" }
+  },
+  "yoodleLogo": {
+    "locator": {
+      "type": "css",
+      "selector": ".style-scope.ytd-yoodle-renderer img"
+    },
+    "capabilities": ["click"],
+    "interaction": { "action": "click", "method": "dom" }
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "subscribeToChannel": {
+    "description": "Subscribe or unsubscribe to a channel",
+    "method": "POST",
+    "url": "https://www.youtube.com/youtubei/v1/subscription/subscribe",
+    "params": {
+      "channelIds": { "type": "array", "required": true, "source": "request_body" }
+    },
+    "response": {
+      "type": "json",
+      "fields": ["responseContext"]
+    },
+    "boundTo": ["subscribeChannel"],
+    "discoveredAt": "2026-07-26"
+  }
+}

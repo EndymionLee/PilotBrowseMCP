@@ -43,7 +43,7 @@ API 和 workflow 是同一个能力的两种实现。API 更快更省，不行�
 
 ## 用户录制与标记
 
-用户说"发你了"、"看看"等时：
+录制的操作和标记的元素会自动保存。用户说"录好了"、"标记好了"、"看看"等时：
 
+- `workflow_list_recordings` -- 查看录制的操作
 - `workflow_list_elements` -- 查看标记的元素
-- `workflow_list_recordings` -- 查看录制的操作流程
