@@ -82,7 +82,8 @@ website-manuals/<site>/
 
 我使用Pilot分析小说网站，小说结构，章节获取api，生成爬虫脚本，做成docker镜像，生成9个爬虫docker容器，放nas上跑，跑了两天，爬了4000多本小说。
 
-![PaImage](assets\Image\PaImage.png)
+![PaImage](assets/Image/PaImage.png)
+
 
 ## 安装
 
