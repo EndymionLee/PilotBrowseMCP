@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Pilot Browse MCP</title>
+  <link rel="icon" type="image/png" href="../icons/icon16.png" />
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     :root {
@@ -28,7 +29,20 @@
       --perm-screenshot: rgba(255,159,10,0.15); --perm-html: rgba(52,199,89,0.15);
       --logo-start: #5b8def; --logo-end: #7c5cfc;
     }
-    body { width:380px; font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',Roboto,sans-serif; font-size:13px; color:var(--text-primary); background:var(--bg-primary); overflow-x:hidden; }
+    body { width:380px; font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',Roboto,sans-serif; font-size:13px; color:var(--text-primary); background:var(--bg-primary); background-image:radial-gradient(circle at 20% 0%, rgba(0,113,227,0.05), transparent 45%), radial-gradient(circle at 90% 10%, rgba(110,86,207,0.05), transparent 45%); overflow-x:hidden; }
+    .subtitle { font-size:10px; color:var(--text-muted); margin-top:1px; letter-spacing:0.4px; }
+    .logo { background:linear-gradient(135deg,var(--logo-start),var(--logo-end)); box-shadow:0 2px 8px rgba(40,35,25,0.3), 0 0 0 1px rgba(247,244,237,0.15) inset; color:#f7f4ed; }
+    .card { transition:box-shadow .15s ease, border-color .15s ease; }
+    .card:hover { box-shadow:0 3px 10px rgba(0,0,0,0.09), 0 1px 3px rgba(0,0,0,0.05); border-color:var(--accent-soft); }
+    .wf-btn { background:linear-gradient(135deg,var(--logo-start),var(--logo-end)); transition:opacity .15s ease, transform .1s ease; }
+    .wf-btn:active { transform:scale(0.96); }
+    .rec-btn.go { background:linear-gradient(135deg,#ff5f52,#ff3b30); transition:transform .1s ease, box-shadow .15s ease; box-shadow:0 1px 4px rgba(255,59,48,0.25); }
+    .rec-btn.go:active { transform:scale(0.96); }
+    .btn-icon { transition:background .15s ease, color .15s ease, transform .1s ease; }
+    .btn-icon:active { transform:scale(0.92); }
+    .perm-item, .tab-item { transition:background .15s ease; }
+    .switch .slider { transition:background .2s ease, border-color .2s ease; }
+    .switch .slider::before { transition:transform .2s ease, background .2s ease; }
     ::-webkit-scrollbar { width:3px; }
     ::-webkit-scrollbar-track { background:transparent; }
     ::-webkit-scrollbar-thumb { background:var(--border); border-radius:2px; }
@@ -86,8 +100,8 @@
     .tabs-empty .icon { font-size:24px; margin-bottom:6px; opacity:0.4; }
 
     .rec-btn { border:none; border-radius:6px; cursor:pointer; font-size:11px; font-weight:600; padding:5px 14px; }
-    .rec-btn.go { background:var(--red); color:#fff; }
-    .rec-btn.go:hover { background:#e0352b; }
+    .rec-btn.go { background:linear-gradient(135deg,#ff5f52,#ff3b30); color:#fff; box-shadow:0 1px 4px rgba(255,59,48,0.25); }
+    .rec-btn.go:hover { background:linear-gradient(135deg,#ff6b5f,#ff453a); box-shadow:0 2px 8px rgba(255,59,48,0.35); }
     .rec-btn.stop { background:var(--bg-secondary); color:var(--text-primary); border:1px solid var(--border); }
     .rec-btn.stop:hover { background:var(--bg-hover); }
     .rec-dot { display:inline-block; width:7px; height:7px; border-radius:50%; background:var(--text-muted); }
@@ -101,8 +115,8 @@
     .wf-input:focus { outline:none; border-color:var(--accent); }
     .wf-row { display:flex; gap:6px; align-items:center; padding:6px 14px; }
     .wf-row:last-child { padding-bottom:10px; }
-    .wf-btn { background:var(--accent); color:#fff; border:none; border-radius:6px; padding:5px 14px; cursor:pointer; font-size:11px; font-weight:500; }
-    .wf-btn:hover { opacity:0.85; }
+    .wf-btn { background:linear-gradient(135deg,var(--logo-start),var(--logo-end)); color:#fff; border:none; border-radius:6px; padding:5px 14px; cursor:pointer; font-size:11px; font-weight:500; box-shadow:0 1px 4px rgba(0,113,227,0.25); }
+    .wf-btn:hover { opacity:0.9; box-shadow:0 2px 8px rgba(0,113,227,0.35); }
     .wf-btn:disabled { opacity:0.4; cursor:default; }
 
     .btn-icon { width:28px; height:28px; border:1px solid var(--border); border-radius:6px; background:transparent; color:var(--text-secondary); cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:14px; }
@@ -112,14 +126,52 @@
     .footer-dot { width:2px; height:2px; border-radius:50%; background:var(--border); }
     .rec-step.active { background:var(--accent-soft); border-left:2px solid var(--green); }
     .rec-step.failed { background:rgba(255,59,48,0.08); border-left:2px solid var(--red); }
+
+    /* ===== Redesign v2: 立体状态栏 / 图标化权限 / 动效 ===== */
+    .status-bar { background:linear-gradient(180deg,var(--bg-card),var(--bg-secondary)); box-shadow:0 2px 10px rgba(0,0,0,0.05); transition:border-color .3s ease, box-shadow .3s ease; }
+    .status-bar:has(.dot.connected) { border-color:rgba(48,185,78,0.4); box-shadow:0 2px 14px rgba(48,185,78,0.12); }
+    .status-text { transition:color .3s ease; }
+    .status-detail { background:linear-gradient(180deg,var(--bg-card),var(--bg-secondary)); border:1px solid var(--border); }
+
+    .card { border-radius:12px; }
+    .card-header { background:linear-gradient(180deg,var(--bg-card),transparent); }
+
+    .perm-icon { border:1px solid var(--border); background:var(--perm-cookies); }
+    .perm-icon.cookies { background:radial-gradient(circle at 30% 25%, rgba(0,113,227,0.35), transparent 65%), var(--perm-cookies); }
+    .perm-icon.storage { background:radial-gradient(circle at 30% 25%, rgba(110,86,207,0.35), transparent 65%), var(--perm-storage); }
+    .perm-icon.screenshot { background:radial-gradient(circle at 30% 25%, rgba(255,149,0,0.35), transparent 65%), var(--perm-screenshot); }
+    .perm-icon.html { background:radial-gradient(circle at 30% 25%, rgba(48,185,78,0.35), transparent 65%), var(--perm-html); }
+    .perm-icon.sql { background:radial-gradient(circle at 30% 25%, rgba(255,59,48,0.35), transparent 65%), var(--perm-screenshot); }
+
+    /* 面板展开 / 状态切换动效 */
+    #permBody, #pickResult, #scriptList { animation:fadeIn .18s ease; }
+    @keyframes fadeIn { from { opacity:0; transform:translateY(-4px); } to { opacity:1; transform:translateY(0); } }
+    .dot { transition:background .3s ease, box-shadow .3s ease; }
+    .rec-dot { transition:background .3s ease; }
+    .tab-favicon { transition:background .2s ease; }
+    .logo { transition:transform .2s ease; }
+    .logo:hover { transform:scale(1.05); }
+    .perm-info { transition:transform .15s ease; }
+    .perm-item:hover .perm-icon { transform:scale(1.08); }
+    .perm-icon { transition:transform .15s ease; }
+    .script-btn-log { opacity:0.65; transition:opacity .15s ease, background .15s ease, transform .1s ease; }
+    .script-btn-log:hover { opacity:1; background:var(--accent-soft); color:var(--accent); }
+    .script-btn-log:active { transform:scale(0.9); }
+
+    .card-title { letter-spacing:0.5px; }
+    .header h1 { letter-spacing:0.5px; }
+    .status-detail { font-family:'SF Mono',Menlo,monospace; }
   </style>
 </head>
 <body>
 
   <div class="header">
     <div class="header-left">
-      <div class="logo">B</div>
-      <h1 id="lblAppName">Pilot Browse MCP</h1>
+      <div class="logo">P</div>
+      <div>
+        <h1 id="lblAppName">Pilot Browse MCP</h1>
+        <div class="subtitle">Agent Browser Runtime</div>
+      </div>
     </div>
     <div class="header-actions">
       <select id="langSelect" style="font-size:10px;background:var(--bg-card);border:1px solid var(--border);border-radius:4px;padding:2px 4px;color:var(--text-muted);cursor:pointer;">

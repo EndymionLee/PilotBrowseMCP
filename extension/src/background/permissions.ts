@@ -15,9 +15,9 @@
  * 权限存储在 chrome.storage.local，跨会话持久化。
  */
 
-export type PermissionAction = 'cookies' | 'local_storage' | 'screenshot' | 'get_html';
+export type PermissionAction = 'cookies' | 'local_storage' | 'screenshot' | 'get_html' | 'sql_injection';
 
-const SENSITIVE_ACTIONS: PermissionAction[] = ['cookies', 'local_storage', 'screenshot', 'get_html'];
+const SENSITIVE_ACTIONS: PermissionAction[] = ['cookies', 'local_storage', 'screenshot', 'get_html', 'sql_injection'];
 
 const STORAGE_KEY = 'browser_mcp_permissions';
 

@@ -26,6 +26,31 @@ export function registerTabHandlers(router: Router): void {
     respond({ success: true });
   });
 
+  router.register('navigate_tab', async (params, respond) => {
+    const { tabId, url } = params as { tabId: number; url: string };
+    await chrome.tabs.update(tabId, { url });
+    respond({ success: true, tabId });
+  });
+
+  router.register('reload_tab', async (params, respond) => {
+    const { tabId } = params as { tabId: number };
+    await chrome.tabs.reload(tabId);
+    respond({ success: true, tabId });
+  });
+
+  router.register('wait_for_load', async (params, respond) => {
+    const { tabId, timeout = 15000 } = params as { tabId: number; timeout?: number };
+    const start = Date.now();
+    while (Date.now() - start < timeout) {
+      try {
+        const tab = await chrome.tabs.get(tabId);
+        if (tab.status === 'complete') { respond({ loaded: true, url: tab.url }); return; }
+      } catch {}
+      await new Promise((r) => setTimeout(r, 300));
+    }
+    respond({ loaded: false, message: `页面 ${timeout}ms 内未加载完成` });
+  });
+
   router.register('get_foreground_setting', async (_params, respond) => {
     try {
       const r = await chrome.storage.local.get('foreground');

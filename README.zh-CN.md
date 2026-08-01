@@ -148,7 +148,7 @@ Browser
 
 ## 特性
 
-- **49 个 MCP 工具** -- 标签页管理、内容提取、DOM 操作、网络拦截、文件保存、录制、脚本自动化
+- **62 个 MCP 工具** -- 标签页管理、内容提取、DOM 操作、网络拦截、文件保存、录制、脚本自动化、SQL 注入检测、JS 逆向
 - **PAB 脚本** -- 类 Python 的浏览器自动化 DSL，支持 if/for/fn 控制流。弹窗直接运行，不需要 LLM
 - **元素拾取** -- 点页面上任意元素，告诉 Agent 这是什么
 - **录制工作流** -- 演示一遍，Agent 学会并复用
@@ -204,6 +204,19 @@ Browser
 |                  | `browser_local_storage`                     | 读取 LocalStorage（需授权）               |
 |                  | `browser_screenshot`                        | 截图（需授权）                            |
 |                  | `browser_permissions_list / grant / revoke` | 权限管理                                  |
+| **安全**   | `sql_injection_list_findings`            | 列出安全清单（含状态）                    |
+|                  | `sql_injection_get_finding`              | 获取单条发现详情                          |
+|                  | `sql_injection_scan`                     | 主动扫描 SQL 注入（浏览器上下文重放）     |
+|                  | `sql_injection_stop`                     | 中止扫描                                  |
+|                  | `sql_injection_update_finding`           | 推进发现状态（确认/修复/误报）            |
+|                  | `sql_injection_generate_script`          | 生成 security-check.pab 复检脚本          |
+|                  | `sql_injection_request`                  | 自定义 SQL payload 探测 + 自动判定/提取    |
+| **JS 逆向** | `js_extract`                             | 抓取页面 JS 文件                          |
+|                  | `js_analyze`                             | AST 分析：端点/函数/加密/签名             |
+|                  | `js_find_function`                       | 定位函数（名称/调用/加密/调用者）         |
+|                  | `js_trace_request`                       | 请求参数 ↔ JS 生成函数关联                 |
+|                  | `js_capability_query`                    | 查询已学习的能力模型                       |
+|                  | `js_reverse`                             | 综合逆向并沉淀 js/ + capabilities/ 报告    |
 
 ---
 

@@ -66,6 +66,130 @@ registerCookieHandlers(router);
 registerScreenshotHandlers(router);
 registerPermissionHandlers(router);
 
+// JS 逆向：收集页面所有 frame 的 JS 文件源码（script[src] + inline）
+router.register('js_collect', async (params, respond) => {
+  const { tabId } = params as { tabId: number };
+  try {
+    const results = await chrome.scripting.executeScript({
+      target: { tabId, allFrames: true },
+      func: () => {
+        const domSrcs = Array.from(document.querySelectorAll('script[src]')).map((s) => (s as HTMLScriptElement).src).filter(Boolean);
+        // 所有已加载的 JS 资源（含动态加载、或加载后被移除的 script），通过 performance 捕获
+        const perfJs = performance.getEntriesByType('resource')
+          .filter((e: any) => e.initiatorType === 'script' || /\.js(\?|#|$)/i.test(e.name))
+          .map((e: any) => e.name);
+        const inline = Array.from(document.querySelectorAll('script:not([src])')).map((s) => s.textContent?.slice(0, 30000) ?? '').filter(Boolean);
+        return { srcs: [...new Set([...domSrcs, ...perfJs])], inline };
+      },
+    });
+    const files: { url: string; size: number; source: string }[] = [];
+    let inlineCount = 0;
+    for (const r of results ?? []) {
+      const srcs: string[] = r.result?.srcs ?? [];
+      inlineCount += (r.result?.inline?.length ?? 0);
+      for (const src of srcs.slice(0, 25)) {
+        if (files.some((f) => f.url === src)) continue;
+        try {
+          const resp = await fetch(src);
+          const text = await resp.text();
+          files.push({ url: src, size: text.length, source: text.slice(0, 500000) });
+        } catch {}
+      }
+    }
+    respond({ files, inlineCount });
+  } catch (err) {
+    respond(undefined, { code: -1, message: `js_collect 失败: ${(err as Error).message}` });
+  }
+});
+
+// JS 逆向半动态 Hook：注入 MAIN world hook，记录 fetch/XHR/CryptoJS 调用输入输出
+const HOOK_FUNC = () => {
+  if ((window as any).__hook_installed) return;
+  (window as any).__hook_installed = true;
+  (window as any).__hook_log = [];
+  const log = (window as any).__hook_log;
+  const push = (entry: any) => { log.push(entry); if (log.length > 500) log.shift(); };
+
+  const origFetch = window.fetch;
+  if (origFetch) {
+    window.fetch = function (...args: any[]) {
+      try {
+        const url = typeof args[0] === 'string' ? args[0] : args[0]?.url;
+        push({ type: 'fetch', url: String(url ?? '').slice(0, 300), method: args[1]?.method ?? 'GET' });
+      } catch {}
+      return origFetch.apply(this, args);
+    };
+  }
+
+  const origOpen = XMLHttpRequest.prototype.open;
+  XMLHttpRequest.prototype.open = function (...args: any[]) {
+    try { push({ type: 'xhr', method: String(args[0] ?? ''), url: String(args[1] ?? '').slice(0, 300) }); } catch {}
+    return origOpen.apply(this, args);
+  };
+
+  const CJ = (window as any).CryptoJS;
+  if (CJ) {
+    for (const m of ['MD5', 'SHA1', 'SHA256', 'AES', 'HmacMD5']) {
+      if (typeof CJ[m] === 'function') {
+        const orig = CJ[m];
+        CJ[m] = function (...args: any[]) {
+          try {
+            let input = '';
+            try { input = typeof args[0] === 'string' ? args[0] : JSON.stringify(args[0]); } catch {}
+            const result = orig.apply(this, args);
+            let output = '';
+            try { output = result?.toString ? String(result.toString()).slice(0, 200) : ''; } catch {}
+            push({ type: 'crypto', algo: m, input: String(input).slice(0, 200), output });
+            return result;
+          } catch (e) { throw e; }
+        };
+      }
+    }
+  }
+};
+
+// 列出页面所有 frame（frameId + url），用于 iframe 定向操作
+router.register('list_frames', async (params, respond) => {
+  const { tabId } = params as { tabId: number };
+  try {
+    const results = await chrome.scripting.executeScript({
+      target: { tabId, allFrames: true },
+      func: () => ({ url: location.href }),
+    });
+    respond({ frames: (results ?? []).map((r: any) => ({ frameId: r.frameId ?? 0, url: r.result?.url ?? '' })) });
+  } catch (err) {
+    respond(undefined, { code: -1, message: `list_frames 失败: ${(err as Error).message}` });
+  }
+});
+
+router.register('js_hook_inject', async (params, respond) => {
+  const { tabId } = params as { tabId: number };
+  try {
+    await chrome.scripting.executeScript({ target: { tabId }, world: 'MAIN', func: HOOK_FUNC });
+    respond({ success: true });
+  } catch (err) {
+    respond(undefined, { code: -1, message: `js_hook_inject 失败: ${(err as Error).message}` });
+  }
+});
+
+router.register('js_hook_collect', async (params, respond) => {
+  const { tabId } = params as { tabId: number };
+  try {
+    const [{ result }] = await chrome.scripting.executeScript({
+      target: { tabId },
+      world: 'MAIN',
+      func: () => {
+        const log = (window as any).__hook_log ?? [];
+        (window as any).__hook_log = [];
+        return { count: log.length, log: log.slice(0, 200) };
+      },
+    });
+    respond(result ?? { count: 0, log: [] });
+  } catch (err) {
+    respond(undefined, { code: -1, message: `js_hook_collect 失败: ${(err as Error).message}` });
+  }
+});
+
 chrome.tabs.onCreated.addListener(() => notifyTabs());
 chrome.tabs.onRemoved.addListener(() => notifyTabs());
 chrome.tabs.onUpdated.addListener((tabId, changeInfo) => {
@@ -556,6 +680,14 @@ async function flushPending(): Promise<void> {
 wsClient.onStatusChange = (connected) => {
   if (connected) flushPending();
 };
+
+// MV3 SW 保活：alarm 周期唤醒 SW 并重连（否则 SW 休眠后不会自动重连 WS）
+chrome.alarms.onAlarm.addListener((alarm) => {
+  if (alarm.name === 'browser-mcp-keepalive') wsClient.onAlarm();
+});
+// SW 因浏览器事件（启动/安装/页面活动）被唤醒时，立即重连
+chrome.runtime.onStartup.addListener(() => wsClient.init());
+chrome.runtime.onInstalled.addListener(() => wsClient.init());
 
 console.log('[BG] Service Worker 启动');
 wsClient.init();

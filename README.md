@@ -146,7 +146,7 @@ Browser
 
 ## Features
 
-- **49 MCP tools** -- tab management, content extraction, DOM operations, network interception, file saving, workflow recording, script automation
+- **62 MCP tools** -- tab management, content extraction, DOM operations, network interception, file saving, workflow recording, script automation, SQL injection detection, JS reverse
 - **PAB scripting** -- Python-like DSL for browser automation with if/for/fn support. Run from popup, no LLM needed
 - **Element picker** -- click any element on the page and tell the agent what it is
 - **Workflow recording** -- demonstrate operations to the agent, it learns and reuses
@@ -202,6 +202,19 @@ Browser
 | | `browser_local_storage` | Read LocalStorage (requires permission) |
 | | `browser_screenshot` | Take screenshot (requires permission) |
 | | `browser_permissions_list / grant / revoke` | Permission management |
+| **Security** | `sql_injection_list_findings` | List security findings (with status) |
+| | `sql_injection_get_finding` | Get details of a single finding |
+| | `sql_injection_scan` | Actively scan for SQL injection (browser-context replay) |
+| | `sql_injection_stop` | Stop scanning |
+| | `sql_injection_update_finding` | Advance finding status (confirm/fix/false positive) |
+| | `sql_injection_generate_script` | Generate a security-check.pab re-check script |
+| | `sql_injection_request` | Custom SQL payload probe + auto verdict/extract |
+| **JS Reverse** | `js_extract` | Collect page JS files |
+| | `js_analyze` | AST analysis: endpoints/functions/crypto/signatures |
+| | `js_find_function` | Locate a function (name/calls/crypto/callers) |
+| | `js_trace_request` | Associate request params with JS generator functions |
+| | `js_capability_query` | Query learned capability models |
+| | `js_reverse` | Full reverse + save js/ + capabilities/ report |
 
 ---
 

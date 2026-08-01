@@ -24,6 +24,8 @@ description: 通过用户行为发现网站能力，学习 API 并沉淀自动�
 | 4. 执行 | [execution.md](execution.md) | 执行能力，API 优先，兜底自动化 |
 | 5. 进化 | [evolution.md](evolution.md) | 每次执行优化实现 |
 | 6. 批量任务 | [batch-tasks.md](batch-tasks.md) | Python 脚本处理批量场景 |
+| 7. 安全检查 | [sql-injection.md](sql-injection.md) | SQL 注入检测与安全清单管理 |
+| 8. JS 逆向 | [js-reverse.md](js-reverse.md) | 前端 JS 分析与加密 API 能力模型 |
 
 ## 校验
 

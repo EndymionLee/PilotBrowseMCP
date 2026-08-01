@@ -24,6 +24,8 @@ Explore websites, understand interaction capabilities, discover APIs, and genera
 | 4. Execution | [execution.md](execution.md) | Execute capabilities, API first, workflow fallback |
 | 5. Evolution | [evolution.md](evolution.md) | Improve implementations over time |
 | 6. Batch Tasks | [batch-tasks.md](batch-tasks.md) | Python scripts for bulk work |
+| 7. Security Checks | [sql-injection.md](sql-injection.md) | SQL injection detection and security checklist management |
+| 8. JS Reverse | [js-reverse.md](js-reverse.md) | Front-end JS analysis and encrypted API capability models |
 
 ## Validation
 

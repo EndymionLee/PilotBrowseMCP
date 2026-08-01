@@ -392,6 +392,36 @@ export function registerNetworkHandlers(router: Router, wsClient: WsClient): voi
     const rules = overrideRules.get(tabId) || [];
     respond({ rules });
   });
+
+  // ── http_request (攻击模式 URL 直扫执行通道) ──
+  // 按 URL 构造浏览器上下文请求（带 cookie/登录态），不依赖网络缓存 requestId。
+
+  router.register('http_request', async (params, respond) => {
+    const p = params as { url: string; method?: string; headers?: Record<string, string>; query?: Record<string, string>; body?: any; cookie?: Record<string, string> };
+    try {
+      let url = p.url;
+      if (p.query) {
+        const u = new URL(url);
+        for (const [k, v] of Object.entries(p.query)) u.searchParams.set(k, String(v));
+        url = u.toString();
+      }
+      const headers: Record<string, string> = { ...(p.headers ?? {}) };
+      if (p.cookie) {
+        headers['Cookie'] = Object.entries(p.cookie).map(([k, v]) => `${k}=${v}`).join('; ');
+      }
+      const fetchOptions: RequestInit = { method: p.method ?? 'GET', headers, credentials: 'include' };
+      if (p.body !== undefined) {
+        fetchOptions.body = typeof p.body === 'object' ? JSON.stringify(p.body) : String(p.body);
+      }
+      const response = await fetch(url, fetchOptions);
+      const respHeaders: Record<string, string> = {};
+      response.headers.forEach((v, k) => { respHeaders[k] = v; });
+      const body = await response.text();
+      respond({ status: response.status, statusText: response.statusText, headers: respHeaders, body });
+    } catch (err) {
+      respond(undefined, { code: -1, message: `http_request 失败: ${(err as Error).message}` });
+    }
+  });
 }
 
 // ─── Fetch 域覆盖逻辑 ───

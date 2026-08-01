@@ -35,6 +35,38 @@ export function registerBrowserTools(server: McpServer, conn: ExtensionConnectio
     return `Tab ${args.id} closed`;
   });
 
+  defineTool(server, conn, 'browser_navigate', {
+    description: 'Navigate an existing tab to a URL (reuse the tab instead of opening a new one). Useful for the monitor → reload → capture loop. Parameters: tabId (required, number, from browser.list_tabs), url (required, string). Returns: confirmation.',
+    inputSchema: z.object({
+      tabId: z.number().describe('Tab ID to navigate'),
+      url: z.string().describe('Full URL to navigate to'),
+    }),
+  }, async (args) => {
+    await conn.sendRequest('navigate_tab', args);
+    return `Navigated tab ${args.tabId} to ${args.url}`;
+  });
+
+  defineTool(server, conn, 'browser_reload', {
+    description: 'Reload an existing tab in place. The reloaded requests are captured if network monitoring is active on that tab. Parameters: tabId (required, number). Returns: confirmation.',
+    inputSchema: z.object({
+      tabId: z.number().describe('Tab ID to reload'),
+    }),
+  }, async (args) => {
+    await conn.sendRequest('reload_tab', args);
+    return `Reloaded tab ${args.tabId}`;
+  });
+
+  defineTool(server, conn, 'browser_wait_for_load', {
+    description: 'Wait until a tab finishes loading (status complete). Use after browser_open / browser_navigate to avoid racing with page load. Parameters: tabId (required), timeout (optional, default 15000). Returns: loaded status and URL.',
+    inputSchema: z.object({
+      tabId: z.number().describe('Tab ID to wait for'),
+      timeout: z.number().optional().default(15000).describe('Max wait in ms, default 15000'),
+    }),
+  }, async (args) => {
+    const r = await conn.sendRequest<{ loaded: boolean; url?: string }>('wait_for_load', args);
+    return JSON.stringify(r, null, 2);
+  });
+
   defineTool(server, conn, 'browser_activate', {
     description: 'Switch to a specific tab and bring it to the foreground. Note: this tool uses "id" (the tab ID from browser.list_tabs), not "tabId". Other browser_* tools use "tabId". Parameters: id (required, number, from list_tabs). Returns: confirmation message.',
     inputSchema: z.object({

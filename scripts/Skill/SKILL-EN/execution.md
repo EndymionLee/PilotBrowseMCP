@@ -96,7 +96,7 @@ fn my_func():               # Function
 my_func()                   # Function call
 ```
 
-**PAB vs MCP:** No mapping needed. All MCP tools (49) work in PAB with the same names. Examples:
+**PAB vs MCP:** No mapping needed. All MCP tools (55) work in PAB with the same names. Examples:
 
 ```python
 # Page tools

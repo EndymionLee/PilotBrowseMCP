@@ -12,6 +12,8 @@ import { registerSecurityTools } from './security.js';
 import { registerFindTools } from './find.js';
 import { registerFileTools } from './files.js';
 import { registerWorkflowTools } from './workflow.js';
+import { registerJsReverseTools } from './jsreverse.js';
+import { registerSqliTools } from './sqli.js';
 
 export function registerAllTools(server: McpServer, conn: ExtensionConnection): void {
   registerBrowserTools(server, conn);
@@ -22,4 +24,6 @@ export function registerAllTools(server: McpServer, conn: ExtensionConnection): 
   registerFindTools(server, conn);
   registerFileTools(server, conn);
   registerWorkflowTools(server, conn);
+  registerSqliTools(server, conn);
+  registerJsReverseTools(server, conn);
 }

@@ -15,6 +15,8 @@
   "permScreenshotDesc": { "message": "对页面进行截图" },
   "permHtml": { "message": "页面 HTML" },
   "permHtmlDesc": { "message": "获取网页源代码" },
+  "permSql": { "message": "SQL 注入扫描" },
+  "permSqlDesc": { "message": "允许发起 SQL 注入攻击性扫描（发送测试 payload）" },
   "sectionPermissions": { "message": "权限" },
   "noPermissions": { "message": "无权限项" },
   "permissionsFailed": { "message": "获取失败" },

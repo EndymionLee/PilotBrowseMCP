@@ -15,6 +15,8 @@
   "permScreenshotDesc": { "message": "Capture page screenshot" },
   "permHtml": { "message": "Page HTML" },
   "permHtmlDesc": { "message": "Get page source code" },
+  "permSql": { "message": "SQL Injection Scan" },
+  "permSqlDesc": { "message": "Allow aggressive SQL injection scanning (sends test payloads)" },
   "sectionPermissions": { "message": "Permissions" },
   "noPermissions": { "message": "No items" },
   "permissionsFailed": { "message": "Failed to load" },

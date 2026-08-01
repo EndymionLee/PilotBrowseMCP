@@ -9,6 +9,7 @@ export function registerDomTools(server: McpServer, conn: ExtensionConnection): 
     inputSchema: z.object({
       tabId: z.number().describe('Tab ID from browser.list_tabs'),
       selector: z.string().describe('CSS selector, e.g. "div.main-content a", ".class-name", "#id"'),
+      frameId: z.number().optional().describe('Target a specific iframe (from browser.list_frames). Main frame is 0'),
     }),
   }, async (args) => {
     try {
@@ -22,6 +23,16 @@ export function registerDomTools(server: McpServer, conn: ExtensionConnection): 
       }
       throw err;
     }
+  });
+
+  defineTool(server, conn, 'browser_list_frames', {
+    description: 'List all frames in a page (frameId + url). Use the frameId to target iframes in browser_evaluate / browser_query / browser_find. The main frame is frameId 0. Parameters: tabId (required). Returns: frames array.',
+    inputSchema: z.object({
+      tabId: z.number().describe('Tab ID'),
+    }),
+  }, async (args) => {
+    const r = await conn.sendRequest<{ frames: unknown[] }>('list_frames', args);
+    return r.frames;
   });
 
   defineTool(server, conn, 'browser_click', {
@@ -107,17 +118,18 @@ export function registerDomTools(server: McpServer, conn: ExtensionConnection): 
   });
 
   defineTool(server, conn, 'browser_evaluate', {
-    description: 'Execute arbitrary JavaScript code in the page context and return the result. For complex interactions that standard tools cannot handle: Shadow DOM access, contenteditable input, React state manipulation, rich text editors. The code runs in the page context and can access shadowRoot, document, window, etc. Powerful tool -- only use when standard tools are insufficient. Parameters: tabId (required, number), code (required, string). Returns: result of the executed JavaScript.',
+    description: 'Execute arbitrary JavaScript code in the page MAIN world and return the result. For complex interactions: Shadow DOM access, iframe access (use frameId), React state manipulation, calling page functions, triggering network requests. Uses chrome.scripting.executeScript so it bypasses page CSP and supports Promise results. Parameters: tabId (required, number), code (required, string), frameId (optional, number, target a specific iframe), allFrames (optional, boolean, run in all frames). Returns: result of the executed JavaScript and the frameId.',
     inputSchema: z.object({
       tabId: z.number().describe('Tab ID'),
-      code: z.string().describe('JavaScript code to execute. Example: `document.querySelector("x-comments").shadowRoot.querySelector(".brt-editor").focus(); document.execCommand("insertText", false, "hello")`'),
+      code: z.string().describe('JavaScript code to execute. Supports Promise (awaited). Example: `window.login()` or `document.querySelector("x-comments").shadowRoot...`'),
+      frameId: z.number().optional().describe('Target a specific iframe by its frameId (0 = main frame). Use browser.list_frames to find frameIds'),
+      allFrames: z.boolean().optional().describe('Run the code in all frames (results from the first frame are returned)'),
     }),
   }, async (args) => {
-    const { tabId, code } = args as any;
+    const { tabId, code, frameId, allFrames } = args as any;
     if (!code) throw new Error('code is required');
-    const result = await conn.sendRequest<any>('evaluate', { tabId, code });
-    if (!result) throw new Error('evaluate returned no response (content script may not be loaded)');
-    if (result.error) throw new Error(result.error);
-    return { result: result.result };
+    const result = await conn.sendRequest<any>('evaluate', { tabId, code, frameId, allFrames });
+    if (result?.error) throw new Error(result.error);
+    return { result: result?.result ?? null, frameId: result?.frameId ?? frameId ?? 0 };
   });
 }

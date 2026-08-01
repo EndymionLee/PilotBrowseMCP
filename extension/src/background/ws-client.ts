@@ -133,7 +133,7 @@ export class WsClient {
 
   private startKeepalive(): void {
     try {
-      chrome.alarms.create(ALARM_NAME, { periodInMinutes: 1 }); // 每 60 秒（MV3 最短可靠间隔）
+      chrome.alarms.create(ALARM_NAME, { periodInMinutes: 0.5 }); // 每 30 秒（MV3 最短可靠间隔）唤醒 SW 保活
     } catch { /* ignore */ }
   }
 

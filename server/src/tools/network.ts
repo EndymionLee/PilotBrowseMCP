@@ -1,4 +1,6 @@
 import { z } from 'zod';
+import fs from 'node:fs/promises';
+import path from 'node:path';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { ExtensionConnection } from '../transport/extension-ws.js';
 import { defineTool } from '../lib/tool-factory.js';
@@ -347,6 +349,8 @@ export function registerNetworkTools(server: McpServer, conn: ExtensionConnectio
     for (const req of r.requests) {
       try {
         const url = new URL(req.url);
+        // 过滤扩展自身/内部请求（chrome-extension://、chrome://、about:、data:、blob:）
+        if (/^(chrome-extension|chrome|about|data|blob):/i.test(url.protocol)) continue;
         const segments = url.pathname.split('/').filter(Boolean);
         const pattern = segments.map((s) => {
           if (/^\d+$/.test(s) || /^[0-9a-f]{8,}-?[0-9a-f]{4,}$/i.test(s)) return '{id}';
@@ -374,16 +378,25 @@ export function registerNetworkTools(server: McpServer, conn: ExtensionConnectio
       .map(([pattern, ep]) => {
         const purpose = detectApiPurpose(pattern, ep.sampleResponse, Array.from(ep.methods));
         const sampleUrl = Array.from(ep.urls)[0] || '';
+        const sampleReq = ep.sampleRequest as any;
+        let hasQuery = false, bodyIsJson = false, hasBody = false;
+        try { hasQuery = new URL(sampleReq?.url ?? '').searchParams.keys().next().value !== undefined; } catch {}
+        hasBody = !!sampleReq?.postData;
+        try { if (hasBody) { JSON.parse(sampleReq.postData); bodyIsJson = true; } } catch {}
         return {
           endpoint: `/${pattern}`, methods: Array.from(ep.methods), purpose,
           requestCount: ep.count, avgResponseSize: Math.round(ep.totalSize / ep.count),
           statusCodes: Array.from(ep.statusCodes),
           replayTemplate: { url: sampleUrl, method: Array.from(ep.methods)[0], note: 'use network.search to find a requestId' },
-          sampleFields: ep.sampleResponse ? Object.keys(ep.sampleResponse).slice(0, 10) : null,
+          replayable: hasQuery || (hasBody && bodyIsJson),
+          paramNote: hasBody && !bodyIsJson ? 'encrypted/non-JSON body (use js_reverse to crack)' : undefined,
+          sampleFields: ep.sampleResponse
+            ? Object.keys(ep.sampleResponse).slice(0, 10)
+            : hasBody ? undefined : null,
         };
       });
 
-    const replayable = apiCatalog.filter(api => api.methods.includes('GET') && api.purpose !== 'unknown');
+    const replayable = apiCatalog.filter((api) => (api as any).replayable && api.purpose !== 'unknown');
 
     return JSON.stringify({
       summary: { totalRequests: r.total, apiEndpointsFound: apiCatalog.length, replayableEndpoints: replayable.length },
@@ -426,6 +439,30 @@ export function registerNetworkTools(server: McpServer, conn: ExtensionConnectio
     if (!urlPattern || responseBody === undefined) return 'urlPattern and responseBody are required for action=set';
     await conn.sendRequest('network_override_set', { tabId, urlPattern, responseBody, statusCode, responseHeaders });
     return `Override rule set: match "${urlPattern}" -> status ${statusCode}`;
+  });
+
+  // ─── export_cache ───
+
+  defineTool(server, conn, 'browser_network_export_cache', {
+    description: 'Export the network monitor cache to a JSON file (website-manuals/<site>/network/network-cache-<date>.json) for persistence across sessions. Use this before stopping monitoring or switching sessions to keep captured request data. Parameters: site (required, string), tabId (optional, number, export one tab; all tabs if omitted). Returns: export path and request count.',
+    inputSchema: z.object({
+      site: z.string().describe('Site directory name, e.g. "example_com"'),
+      tabId: z.number().optional().describe('Export only this tab\'s cache. All monitored tabs if omitted'),
+    }),
+  }, async (args) => {
+    const { site, tabId } = args as any;
+    const safeSite = site.replace(/[^a-zA-Z0-9一-龥_-]/g, '_');
+    const search = await conn.sendRequest<{ requests: any[] }>('network_search', { tabId, limit: 1000, sort: 'latest' });
+    const dir = path.resolve(process.env.MANUALS_DIR || 'website-manuals', safeSite, 'network');
+    await fs.mkdir(dir, { recursive: true });
+    const date = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+    const file = path.join(dir, `network-cache-${date}.json`);
+    const exported = (search.requests ?? []).map((req) => ({
+      url: req.url, method: req.method, timestamp: req.timestamp,
+      response: req.response ? { status: req.response.status, mimeType: req.response.mimeType, body: req.response.body?.slice(0, 20000) } : undefined,
+    }));
+    await fs.writeFile(file, JSON.stringify({ exportedAt: new Date().toISOString(), count: exported.length, requests: exported }, null, 2), 'utf-8');
+    return JSON.stringify({ path: file, count: exported.length }, null, 2);
   });
 }
 

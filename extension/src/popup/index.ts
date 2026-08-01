@@ -2,7 +2,7 @@
  * Popup script
  */
 
-type PermissionAction = 'cookies' | 'local_storage' | 'screenshot' | 'get_html';
+type PermissionAction = 'cookies' | 'local_storage' | 'screenshot' | 'get_html' | 'sql_injection';
 type LocaleData = Record<string, { message: string }>;
 
 let localeData: LocaleData | null = null;
@@ -86,6 +86,7 @@ function buildPermMeta(): Record<PermissionAction, PermMeta> {
     local_storage: { label: _('permStorage'), desc: _('permStorageDesc'), icon: '\u{1F4BE}', iconClass: 'storage' },
     screenshot:   { label: _('permScreenshot'), desc: _('permScreenshotDesc'), icon: '\u{1F4F7}', iconClass: 'screenshot' },
     get_html:     { label: _('permHtml'), desc: _('permHtmlDesc'), icon: '\u{1F50D}', iconClass: 'html' },
+    sql_injection: { label: _('permSql'), desc: _('permSqlDesc'), icon: '\u{1F50E}', iconClass: 'sql' },
   };
 }
 
@@ -134,7 +135,37 @@ async function toggleTheme(): Promise<void> {
   const newTheme = isDark ? 'light' : 'dark'; applyTheme(newTheme);
   try { await chrome.storage.local.set({ theme: newTheme }); } catch {}
 }
-themeBtn.addEventListener('click', toggleTheme);
+// 主题切换高级动效：自定义圆形展开（clip-path 圆从按钮位置扩散，圆边界柔和渐变）
+themeBtn.addEventListener('click', (e: MouseEvent) => {
+  const isDark = document.documentElement.classList.contains('dark');
+  const newTheme = isDark ? 'light' : 'dark';
+  const rect = themeBtn.getBoundingClientRect();
+  const cx = rect.left + rect.width / 2;
+  const cy = rect.top + rect.height / 2;
+  const maxR = Math.hypot(Math.max(cx, 380 - cx), Math.max(cy, 600 - cy)) + 24;
+
+  // overlay：目标主题背景色，圆形 clip-path 从 0 扩散；圆边缘径向渐变柔和过渡
+  const bgColor = newTheme === 'dark' ? '#0f1119' : '#f5f5f7';
+  const overlay = document.createElement('div');
+  overlay.style.cssText = `
+    position: fixed; left:0; top:0; width:100%; height:100%;
+    pointer-events:none; z-index:9997;
+    background: radial-gradient(circle at ${cx}px ${cy}px, ${bgColor} 0%, ${bgColor} 85%, transparent 100%);
+    clip-path: circle(0px at ${cx}px ${cy}px);
+  `;
+  document.body.appendChild(overlay);
+
+  // 切换主题（overlay 覆盖期间，圆内显示新主题色）
+  applyTheme(newTheme);
+  chrome.storage.local.set({ theme: newTheme }).catch(() => {});
+
+  // 圆形展开动画
+  const anim = overlay.animate(
+    { clipPath: [`circle(0px at ${cx}px ${cy}px)`, `circle(${maxR}px at ${cx}px ${cy}px)`] },
+    { duration: 500, easing: 'cubic-bezier(0.4, 0, 0.2, 1)' },
+  );
+  anim.onfinish = () => overlay.remove();
+});
 window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', async () => {
   try { const { theme } = await chrome.storage.local.get('theme'); if (!theme) applyTheme(getSystemTheme()); } catch {}
 });
@@ -295,7 +326,7 @@ function renderScriptList() {
         '<div style="display:flex;gap:2px;">' +
         '<button class="btn-icon script-btn-run" data-id="' + s.id + '" style="font-size:11px;width:22px;height:22px;" title="Run">' + (running ? '&#x23F9;' : '&#x25B6;') + '</button>' +
         '<button class="btn-icon script-btn-pin" data-id="' + s.id + '" style="font-size:11px;width:22px;height:22px;' + (s.pinned ? 'color:#FF9800;' : '') + '" title="' + (s.pinned ? 'Unpin' : 'Pin') + '">' + (s.pinned ? '&#x2605;' : '&#x2606;') + '</button>' +
-        '<button class="btn-icon script-btn-log" data-id="' + s.id + '" style="font-size:11px;width:22px;height:22px;" title="View log">&#x1F4CB;</button>' +
+        '<button class="btn-icon script-btn-log" data-id="' + s.id + '" style="font-size:12px;width:24px;height:24px;" title="View log">&#x1F441;</button>' +
         '<button class="btn-icon script-btn-rename" data-id="' + s.id + '" style="font-size:11px;width:22px;height:22px;" title="Rename">&#x270E;</button>' +
         '<button class="btn-icon script-btn-del" data-id="' + s.id + '" style="font-size:11px;width:22px;height:22px;color:var(--red);" title="Delete">&#x2715;</button>' +
         '</div></div>';

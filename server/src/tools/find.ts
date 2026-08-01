@@ -14,6 +14,7 @@ export function registerFindTools(server: McpServer, conn: ExtensionConnection):
       tag: z.string().optional().describe('HTML tag, e.g. "button", "a", "input"'),
       waitFor: z.string().optional().describe('CSS selector to wait for before searching. Use for dynamically loaded content, e.g. waitFor=".pagination" before finding "Next" button'),
       timeout: z.number().optional().default(10000).describe('Timeout in ms for waitFor. Default 10000'),
+      frameId: z.number().optional().describe('Target a specific iframe (from browser.list_frames). Main frame is 0'),
     }),
   }, async (args) => {
     const { tabId, text, role, type, tag, waitFor, timeout } = args as any;

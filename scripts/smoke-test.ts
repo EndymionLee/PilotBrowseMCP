@@ -136,39 +136,59 @@ async function runTests(): Promise<void> {
     console.log('[2] 验证工具注册...');
     const tools = await client.listTools();
     const expectedTools = [
-      'browser.list_tabs',
-      'browser.open',
-      'browser.close',
-      'browser.activate',
-      'browser.screenshot',
-      'browser.get_markdown',
-      'browser.get_html',
-      'browser.get_text',
-      'browser.extract_article',
-      'browser.extract_table',
-      'browser.extract_links',
-      'browser.extract_images',
-      'browser.query',
-      'browser.click',
-      'browser.type',
-      'browser.scroll',
-      'browser.wait',
-      'browser.wait_for_element',
-      'browser.cookies',
-      'browser.local_storage',
-      'browser.start_network_monitor',
-      'browser.stop_network_monitor',
-      'browser.get_network_logs',
-      'browser.network.search',
-      'browser.network.replay',
-      'browser.permissions.list',
-      'browser.permissions.grant',
-      'browser.permissions.revoke',
-      'browser.current_page',
-      'browser.inspect_page',
-      'browser.find',
-      'browser.save_content',
-      'browser.save_xpath',
+      'browser_list_tabs',
+      'browser_list_frames',
+      'browser_open',
+      'browser_navigate',
+      'browser_reload',
+      'browser_wait_for_load',
+      'browser_network_export_cache',
+      'browser_close',
+      'browser_activate',
+      'browser_screenshot',
+      'browser_get_markdown',
+      'browser_get_html',
+      'browser_get_text',
+      'browser_extract_article',
+      'browser_extract_table',
+      'browser_extract_links',
+      'browser_extract_images',
+      'browser_query',
+      'browser_click',
+      'browser_type',
+      'browser_scroll',
+      'browser_wait',
+      'browser_wait_for_element',
+      'browser_cookies',
+      'browser_local_storage',
+      'browser_start_network_monitor',
+      'browser_stop_network_monitor',
+      'browser_network_export',
+      'browser_network_search',
+      'browser_network_replay',
+      'browser_permissions_list',
+      'browser_permissions_grant',
+      'browser_permissions_revoke',
+      'browser_current_page',
+      'browser_inspect_page',
+      'browser_find',
+      'browser_save_content',
+      'browser_save_xpath',
+      'sql_injection_list_findings',
+      'sql_injection_get_finding',
+      'sql_injection_scan',
+      'sql_injection_request',
+      'sql_injection_stop',
+      'sql_injection_update_finding',
+      'sql_injection_generate_script',
+      'js_extract',
+      'js_analyze',
+      'js_find_function',
+      'js_trace_request',
+      'js_capability_query',
+      'js_reverse',
+      'js_hook',
+      'js_hook_collect',
     ];
 
     let allFound = true;
@@ -190,7 +210,7 @@ async function runTests(): Promise<void> {
     console.log('[3] 测试 browser.wait (无需 Extension 也能运行)...');
     try {
       const start = Date.now();
-      await client.callTool('browser.wait', { ms: 200 });
+      await client.callTool('browser_wait', { ms: 200 });
       const elapsed = Date.now() - start;
       assert(elapsed >= 150, `wait 200ms 实际等待 ${elapsed}ms`);
     } catch (err) {
@@ -206,7 +226,7 @@ async function runTests(): Promise<void> {
     let lastError = '';
     for (let i = 0; i < 15; i++) {
       try {
-        permissionResult = await client.callTool('browser.permissions.list', {});
+        permissionResult = await client.callTool('browser_permissions_list', {});
         if (permissionResult?.content?.[0]?.text && !permissionResult.isError) {
           console.log(`  尝试 ${i + 1}: 成功`);
           break;

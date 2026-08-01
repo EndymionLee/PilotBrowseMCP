@@ -13,8 +13,11 @@ import { registerAllTools } from './tools/index.js';
 import { setLogLevel } from './lib/logger.js';
 import { logger } from './lib/logger.js';
 import { config } from './config.js';
-import fs from 'fs/promises';
-import path from 'path';
+import { analyzeRequest } from './security/analyzers/request.js';
+import { FindingStore } from './security/finding-store.js';
+import { inferSite, manualSecurityDir } from './security/site.js';
+import fs from 'node:fs/promises';
+import path from 'node:path';
 
 async function main(): Promise<void> {
   if (config.debug) {
@@ -63,6 +66,27 @@ async function main(): Promise<void> {
   conn.on('shutdown', () => {
     logger.info('Server', '收到关闭信号');
     setTimeout(() => process.exit(0), 100);
+  });
+
+  // 被动 SQLi 检测：订阅扩展推送的网络请求事件，粗筛注入特征
+  conn.on('Network.requestWillBeSent', async (raw: any) => {
+    try {
+      const request = raw?.params?.request;
+      if (!request?.url) return;
+      const rules = analyzeRequest(request.url, request.postData);
+      if (rules.length === 0) return;
+      const site = inferSite(request.url);
+      if (!site) return;
+      const store = new FindingStore(manualSecurityDir(site));
+      await store.upsert({
+        url: request.url,
+        method: request.method ?? 'GET',
+        parameter: rules[0].parameter ?? 'unknown',
+        confidence: rules.some((r) => r.confidence === 'medium') ? 0.6 : 0.4,
+        matchedRules: rules.map((r) => r.ruleId),
+      });
+      logger.debug('Security', 'SQLi 可疑请求', { site, url: request.url, rules: rules.map((r) => r.ruleId) });
+    } catch {}
   });
 
   // 2. MCP Server
